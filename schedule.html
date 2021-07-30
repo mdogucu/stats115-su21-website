@@ -1,0 +1,1238 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>STATS 115</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://kit.fontawesome.com/4145f6a1ca.js"></script>
+
+
+	  <!--for toc-->
+<link
+  rel="stylesheet"
+  href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.css"
+/>
+<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script>
+
+	  <!--end of for toc-->
+
+    <!-- function for adding html within html-->
+
+        <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+        <script>
+        $(function () {
+            $(".load-html").each(function () {
+                $(this).load(this.dataset.source);
+            });
+        });
+        </script>
+
+  </head>
+  <body data-spy="scroll" data-target="#toc">
+
+
+    <div class="load-html"  data-source="navbar.html"></div>
+
+
+    <div class = "main-text">
+		
+		<button class="accordion">Week 1, Aug 2 - 6</button>
+<div class="panel"> <i class="fas fa-hard-hat" aria-hidden="true"
+      title="A helmet icon" style="color:black;"></i> Under Construction</div>
+		<button class="accordion">Week 2, Aug 9 - 13</button>
+<div class="panel"> <i class="fas fa-hard-hat" aria-hidden="true"
+      title="A helmet icon" style="color:black;"></i> Under Construction</div>
+
+<button class="accordion">Week 3, Aug 16 - 20
+</button>
+<div class="panel"> <i class="fas fa-hard-hat" aria-hidden="true"
+      title="A helmet icon" style="color:black;"></i> Under Construction</div>
+ 
+ <button class="accordion">Week 4, Aug  23 - 27
+
+</button>
+<div class="panel"> <i class="fas fa-hard-hat" aria-hidden="true"
+      title="A helmet icon" style="color:black;"></i> Under Construction</div>
+		
+		<button class="accordion">Week 5, Aug 30 - Sep 3
+
+</button>
+<div class="panel"> <i class="fas fa-hard-hat" aria-hidden="true"
+      title="A helmet icon" style="color:black;"></i> Under Construction</div>
+		
+		<!--
+		
+<button class="accordion">Week 1, Jan 4 - 8, Introduction to the Course and Bayesian Statistics</button>
+<div class="panel"> 
+		<br>
+      <br>
+
+      <table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Welcome to the Course</td>
+          <td> </td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2377454&node=8523393&a=551154729&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></td>
+          <td></td>
+        </tr>
+
+	<tr>
+      <td><input type="checkbox" /></td>
+      <td>Sign up for Piazza</td>
+      <td></td>
+      <td><a href="https://canvas.eee.uci.edu/courses/33961/external_tools/4740"
+            target = "_blank"><i class="fas fa-link"
+            aria-hidden="true"
+            title="External link"></i></a></td>
+      <td></td>
+    </tr>
+        
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Introduce Yourself to the Class</td>
+          <td></td>
+          <td> <a href="https://piazza.com/class/kjghwhrq80o3bt?cid=6", target = "_blank">
+            <i class="fas fa-comment" aria-hidden="true"
+            title="External Link to Canvas Discussion" target = "_blank"></i></a></td>
+          <td>Jan 7, 7 pm</td>
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Introduce Yourself to your Professor</td>
+          <td>The responses to this "quiz" will not be available to your classmates.
+            It is untimed.</td>
+
+          <td> <a href="https://www.gradescope.com/courses/220501/assignments/917496"> <i class="fas fa-edit" aria-hidden="true"
+            title="External Link to Gradescope" target = "_blank"></i></a></td>
+          <td>Jan 7, 11:59 pm</td>
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td> Getting to Know the Course Website &nbsp; &nbsp; </td>
+          <td>Take time go over the contents of this website, especially read the policies section. Do not forget to bookmark <a href="https://stats115.com">stats115.com</a>.</td>
+          <td> </td>
+          <td></td>
+        </tr>
+      </tr>
+
+
+
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Syllabus Quiz</td>
+          <td>Timed 30 min. Before taking it you need to read all the information on this course website. If you have questions come to office hours first before taking the quiz.</td>
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/920145" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External Link to Gradescope" ></i></a> </td>
+          <td>Jan 7, 11:59 pm</td>
+        </tr>
+
+       <tr>
+      <td><input type="checkbox" /></td>
+      <td> Download and install R  &nbsp; &nbsp; </td>
+      <td>Yes, you do need to download and install unless you have the latest version.</td>
+	  <td><a href="https://mirror.las.iastate.edu/CRAN/" target = "_blank"> <i class="fas fa-link" aria-hidden="true"
+            title="External link"></i></a></td>
+      <td></td>
+    </tr>
+
+  <tr>
+      <td><input type="checkbox" /></td>
+      <td> Download and install RStudio  &nbsp; &nbsp; </td>
+      <td>Yes, you do need to download and install unless you have the latest version. Download the free Desktop version.</td>
+	  <td><a href="https://rstudio.com/products/rstudio/download/" target = "_blank"> <i class="fas fa-link" aria-hidden="true"
+            title="External link"></i></a></td>
+      <td></td>
+    </tr>
+
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Install bayesrules package. Make sure to run the code in the Console and not in a R script. </td>
+          <td></td>
+          <td><a href="https://github.com/mdogucu/bayesrules/blob/master/README.md" target=_"blank">
+            <i class="fas fa-link" aria-hidden="true"
+            title="External link"></i></a></td>
+          <td></td>
+
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Install rstan </td>
+          <td>Installation of rstan is quite an experience in comparison to other R packages.
+            Read the guide provided at the link and follow the steps. You can stop for now if you make it to
+            <i>Checking the C++ Toolchain</i>
+</td>
+          <td><a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started" target=_"blank">
+            <i class="fas fa-link" aria-hidden="true"
+            title="External link"></i></a></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+
+          <td> Download VPN  &nbsp; &nbsp;  </td>
+          <td>Use the instructions to download VPN so that you can access resources
+            that are only available on the campus network.</td>
+          <td> <a href="https://www.oit.uci.edu/help/vpn/" target = "_blank"> <i class="fas fa-link" aria-hidden="true"
+            title="External link"></i></a></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+
+          <td>Toolbox Quiz</td>
+          <td></td>
+          <td> <a href="https://www.gradescope.com/courses/220501/assignments/917498" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a></td>
+          <td>Jan 7, 11:59 pm</td>
+        </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Introduction to Bayesian Statistics</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2377455&node=8523394&a=920820043&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week01/slide-01a-intro-bayes.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+            </tr>
+	
+	        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Probability Review</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2377456&node=8523397&a=1040984428&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week01/slide-01b-prob-review.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+            </tr>
+	
+		        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Bayes' Rule for Events</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2377461&node=8523421&a=556175066&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week01/slide-01c-bayes-events.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+            </tr>
+
+
+	
+	
+	   <tr>
+        <td><input type="checkbox" /></td>
+        <td>Review of ggplot</td>
+        <td>If you need a refresher on ggplot you can watch the ggplot video from my ICS80 class.</td>
+        <td><a href="https://uci.yuja.com/V/Video?v=1987478&node=7626146&a=864614823&autoplay=1" target = "_blank">
+          <i class="fas fa-video" aria-hidden="true"
+          title="Link to lecture video"></i></a> &nbsp;
+           </td>
+        <td></td>
+      </tr>
+	
+	   <tr>
+        <td><input type="checkbox" /></td>
+        <td>Review of the pipe operator</td>
+        <td>If you need a refresher on the pipe operator you can watch the video from my ICS80 class.</td>
+        <td><a href="https://uci.yuja.com/V/Video?v=2033203&node=7726168&a=542742454&autoplay=1" target = "_blank">
+          <i class="fas fa-video" aria-hidden="true"
+          title="Link to lecture video"></i></a> &nbsp;
+           </td>
+        <td></td>
+      </tr>
+	
+	
+	      <tr>
+        <td><input type="checkbox" /></td>
+        <td>Simulating the Posterior for Events</td>
+        <td></td>
+        <td><a href="https://uci.yuja.com/V/Video?v=2377463&node=8523441&a=94010130&autoplay=1" target = "_blank">
+          <i class="fas fa-video" aria-hidden="true"
+          title="Link to lecture video"></i></a> &nbsp; </td>
+        <td></td>
+      </tr>
+
+
+      <tr>
+        <td><input type="checkbox" /></td>
+
+        <td>Bayes' Rule for Events Quiz</td>
+        <td></td>
+        <td> <a href="https://www.gradescope.com/courses/220501/assignments/917499" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+          title="External link"></i></a></td>
+        <td>Jan 7, 11:59 pm</td>
+      </tr>
+
+
+	<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapter 1, Sections 2.1 and 2.2</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Bayesian Basics Homework</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/926880" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 15, 11:59 pm</td>
+        </tr>
+
+
+      </table>
+
+		<br>
+		</div>
+		
+<button class="accordion">Week 2, Jan 11 - 15, The Beta-Binomial Model</button>
+<div class="panel"> 
+	<br>
+	  
+	  <table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Bayes' Rule for Random Variables</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2391094&node=8591900&a=212481363&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week02/slide-02a-bayes-rv.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		  
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Bayes' Rule for Random Variables Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/929242" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 14, 11:59 pm</td>
+        </tr>
+		  
+		  
+		        <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Beta Prior</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2391095&node=8591901&a=1390115114&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week02/slide-02b-beta-prior.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		  	 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Beta Prior Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/929289" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 14, 11:59 pm</td>
+        </tr>
+		  
+		  
+		          <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Beta-Binomial Model</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2391097&node=8591903&a=1912025937&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week02/slide-02c-beta-binomial.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		  	 <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Beta-Binomial Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/929291" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 14, 11:59 pm</td>
+        </tr>
+		  
+		  	<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Sections 2.3, 3.1, 3.2, 3.3, and 3.4</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+		  
+		  	 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Homework 2</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/941982" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 22, 11:59 pm</td>
+        </tr>
+	</table>
+	  <br>
+	  
+	  </div>
+
+<button class="accordion">Week 3, Jan 18 - 22, Balance and Sequentiality in Bayesian Analyses
+</button>
+<div class="panel"> 
+	<br>
+	  
+	   <table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Beta-Binomial Review and Posterior Simulation</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2426054&node=8802355&a=1427388847&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week03/slide-03a-betabin-sim.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		   
+		   
+		      <tr>
+          <td><input type="checkbox" /></td>
+          <td>Balance in Bayesian Analyses</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2426055&node=8802367&a=1032635103&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week03/slide-03b-bayes-balance.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		   
+		   
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Sequentialiy in Bayesian Analyses</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2426057&node=8802369&a=357443110&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week03/slide-03c-bayes-sequentiality.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		 
+		  
+		      
+		  
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Balance and Sequentiality Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/943764" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 21, 11:59 pm</td>
+        </tr>
+		  
+		  
+
+		  
+
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Sections 3.5, 3.6 and all sections in Chapter 4</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+		  
+		  	 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Homework 3</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/946640" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 29, 11:59 pm</td>
+        </tr>
+	</table>
+	  
+	  <br>
+	  </div>
+ 
+ <button class="accordion">Week 4, Jan 25 - 29, Conjugate Family
+
+</button>
+<div class="panel"> 
+	  
+	  
+	  <br>
+	
+	 <table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Gamma-Poisson Model</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2469626&node=9004688&a=2008399511&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week04/slide-04a-gamma-poisson.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Gamma-Poisson Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/960707" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 28, 11:59 pm</td>
+        </tr>
+		 
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Normal-Normal Model</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2469632&node=9004733&a=100284340&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week04/slide-04b-normal-normal.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		   
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>The Normal-Normal Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/960709" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Jan 28, 11:59 pm</td>
+        </tr>
+		   
+			  
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapter 5</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+		  
+		  	 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Homework 4</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/965904" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 5, 11:59 pm</td>
+        </tr>
+	</table>
+	
+	<br>
+	  
+	  
+	  
+	  </div>
+		
+		<button class="accordion">Week 5, Feb 1 - 5, Approximating the Posterior
+
+</button>
+<div class="panel"> 
+	<br>
+	
+	 <table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Grid Approximation</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2506100&node=9113143&a=1382361196&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week05/slide-05a-grid-app.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Grid Approximation Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/981562" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 4, 11:59 pm</td>
+        </tr>
+		 
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Markov Chains with RStan</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2506107&node=9113159&a=438961736&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week05/slide-05b-mcmc-rstan.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		   
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Markov Chains Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/981567" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 4, 11:59 pm</td>
+        </tr>
+		   
+			  
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapter 6</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+	
+	<tr>
+          <td><input type="checkbox" /></td>
+          <td>Mock Midterm</td>
+          <td>Will not be graded</td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/981590" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td></td>
+        </tr>
+
+		 
+		 
+		 
+	</table>
+	<br>  
+	  
+	  </div>
+		
+	  
+	  
+	  
+		<button class="accordion">Week 6, Feb 8 - 12, Metropolis-Hastings Algorithm
+
+</button>
+<div class="panel"> 
+	  
+
+	
+	
+	  <br>
+	
+	<table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Metropolis-Hastings Algorithm</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2557725&node=9244253&a=807676666&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></td>
+              <td></td>
+         </tr>
+		  
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Metropolis-Hastings Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1006930" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 12, 11:59 pm</td>
+        </tr>
+		 
+		   
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Midterm</td>
+          <td>Live during discussion. You need to be logged onto zoom simultaneously.</td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1006924" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 11, 07:00 - 07:50 pm</td>
+        </tr>
+		   
+			  
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapter 7</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+	
+
+		 
+		 
+		 
+	</table>
+	<br>  
+	  
+	  
+	  </div>
+		
+		<button class="accordion">Week 7, Feb 15 - 19, Posterior Inference and Prediction
+			
+
+</button>
+<div class="panel"> 
+	  
+	  
+	  
+	  <br>
+	
+	<table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Posterior Inference</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2597628&node=9336670&a=796995482&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week07/slide-07a-posterior-inference.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Posterior Inferencce Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1021990" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 18, 11:59 pm</td>
+        </tr>
+		
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Posterior Prediction</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2597630&node=9336680&a=1842232259&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week07/slide-07b-posterior-prediction.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Posterior Prediction Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1022002" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 18, 11:59 pm</td>
+        </tr>
+		 
+		   
+
+		   
+			  
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapter 8</td>
+      <td><a href="https://www.bayesrulesbook.com/" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+		
+	<tr>
+          <td><input type="checkbox" /></td>
+          <td>Homework 7</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1032022" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 26, 11:59 pm</td>
+        </tr>
+	
+
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Final Project</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1021942" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 16, 12:30 pm</td>
+        </tr>
+		 
+		 
+	</table>
+	<br>  
+	  
+	  
+	  
+	  
+	  </div>
+		
+		<button class="accordion">Week 8, Feb 22 - 26, Simple Normal Regression
+
+</button>
+<div class="panel"> 
+	
+	  
+	  <br>
+	
+	<table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Simple Normal Regression</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2633526&node=9545302&a=692863261&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week08/slide-08a-snr.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		
+
+		
+		 <tr>
+          <td><input type="checkbox" /></td>
+          <td>Posterior Prediction</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2633530&node=9545309&a=1630314871&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week08/slide-08b-posterior-prediction.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		  
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Simple Normal Regression Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1041688" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 25, 11:59 pm</td>
+        </tr>
+		 
+		  <tr>
+          <td><input type="checkbox" /></td>
+          <td>Evaluating Regression Models</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2633563&node=9545374&a=1696626849&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week08/slide-08c-reg-eval.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+
+		  <tr>
+          <td><input type="checkbox" /></td>
+          <td>Model Evaluation Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1041701" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Feb 25, 11:59 pm</td>
+        </tr>
+			  
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapters 9 and 10</td>
+      <td><a href="https://canvas.eee.uci.edu/courses/33961/files?preview=13235789" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+		
+	<tr>
+          <td><input type="checkbox" /></td>
+          <td>Homework 8</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1041709" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>March 5, 11:59 pm</td>
+        </tr>
+	
+
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Final Project</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1021942" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 16, 12:30 pm</td>
+        </tr>
+		 
+		 
+	</table>
+	<br>  
+	  
+	  
+	
+	</div>
+		
+		<button class="accordion">Week 9, March 1 - 5, Beyond Simple Normal Regreesion
+</button>
+<div class="panel"> 
+	  
+	  <br>
+	
+	<table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td>Extending Normal Regression</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2712701&node=9677137&a=1821727081&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week09/slide-09a-beyond-simple.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+		
+
+	
+		  
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Extending Normal Regression Quiz</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1059218" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>March 4, 11:59 pm</td>
+        </tr>
+		 
+		  <tr>
+          <td><input type="checkbox" /></td>
+          <td>Logistic Regression</td>
+          <td></td>
+          <td><a href="https://uci.yuja.com/V/Video?v=2712723&node=9677190&a=1337353774&autoplay=1" target = "_blank">
+            <i class="fas fa-video" aria-hidden="true"
+            title="Link to lecture video"></i></a> &nbsp;
+            <a href="slides/week09/slide-09b-logistic-reg.html"
+            target = "_blank"><i class="fas fa-chalkboard-teacher" aria-hidden="true"
+            title="External link"></i></a> &nbsp;</td>
+              <td></td>
+         </tr>
+
+		  <tr>
+          <td><input type="checkbox" /></td>
+          <td>Logistic Regression Quiz</td>
+          <td></td>
+
+          <td><a href="pe.com/courses/220501/assignments/1059227" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>March 4, 11:59 pm</td>
+        </tr>
+			  
+		  
+<tr>
+      <td><input type="checkbox" /></td>
+      <td> Reading from Bayes Rules! book</td>
+      <td>Chapters 11 and 13</td>
+      <td><a href="https://canvas.eee.uci.edu/courses/33961/files?preview=13235789" target = "_blank">
+            <i class="fas fa-book" aria-hidden="true"
+			   title="Link to reading"></i></a> </td>
+      <td></td>
+    </tr>
+		
+	<tr>
+          <td><input type="checkbox" /></td>
+          <td>Homework 9</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1059273" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>March 12, 11:59 pm</td>
+        </tr>
+	
+
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Final Project</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1021942" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 16, 12:30 pm</td>
+        </tr>
+		
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Final Oral Exam</td>
+          <td>Schedule your exam </td>
+
+          <td><a href="https://piazza.com/class/kjghwhrq80o3bt?cid=50" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 16, 12:30 pm</td>
+        </tr>
+		 
+		 
+	</table>
+	<br>
+	
+	  
+	  </div>
+
+<button class="accordion">Week 10, March 8 - 12, Final Projects
+
+</button>
+<div class="panel"> 
+	  
+	  <br>
+
+	
+	<table class="table-striped text-left table-bordered" align = "center">
+
+        <thead>
+
+          <th style="width:  3%"></th>
+          <th style="width:  30%"></th>
+          <th style="width:  40%">Notes</th>
+          <th style="width:  5%">Links</th>
+
+          <th style="width:  15%">Due</th>
+        </thead>
+
+
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Course Evaluations</td>
+          <td></td>
+
+          <td><a href="https://evaluations.eee.uci.edu/" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 15, 07:50 am</td>
+        </tr>
+	
+
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Final Project</td>
+          <td></td>
+
+          <td><a href="https://www.gradescope.com/courses/220501/assignments/1021942" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 16, 12:30 pm</td>
+        </tr>
+		
+		<tr>
+          <td><input type="checkbox" /></td>
+          <td>Final Oral Exam</td>
+          <td>Schedule your exam </td>
+
+          <td><a href="https://piazza.com/class/kjghwhrq80o3bt?cid=50" target = "_blank"> <i class="fas fa-edit" aria-hidden="true"
+            title="External link"></i></a> </td>
+          <td>Mar 16, 12:30 pm</td>
+        </tr>
+		 
+		 
+	</table>
+		
+	<br>
+	
+	  
+	  </div>
+	
+	<br>
+	  
+	  
+	  
+	  
+	  
+	  </div>
+-->
+
+
+      
+    </div> <!--end of main-text-->
+
+
+    <div class="load-html"  data-source="footer.html"></div>
+
+
+  </body>
+</html>
