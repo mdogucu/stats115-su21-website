@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Simple Normal Regression</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Mine Dogucu" />
+    <script src="slide-08a-snr_files/header-attrs-2.6.6/header-attrs.js"></script>
+    <link rel="stylesheet" href="slide-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide
+
+
+
+
+
+
+
+&lt;br&gt;
+&lt;br&gt;
+.right-panel[ 
+
+# Simple Normal Regression
+## Dr. Mine Dogucu
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+
+```r
+glimpse(bikes)
+```
+
+```
+## Rows: 500
+## Columns: 13
+## $ date        &lt;date&gt; 2011-01-01, 2011-01-03, 2011-01-04, 2011-01-05, 2011-01-…
+## $ season      &lt;chr&gt; "winter", "winter", "winter", "winter", "winter", "winter…
+## $ year        &lt;int&gt; 2011, 2011, 2011, 2011, 2011, 2011, 2011, 2011, 2011, 201…
+## $ month       &lt;chr&gt; "Jan", "Jan", "Jan", "Jan", "Jan", "Jan", "Jan", "Jan", "…
+## $ day_of_week &lt;chr&gt; "Sat", "Mon", "Tue", "Wed", "Fri", "Sat", "Mon", "Tue", "…
+## $ weekend     &lt;lgl&gt; TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FAL…
+## $ holiday     &lt;chr&gt; "no", "no", "no", "no", "no", "no", "no", "no", "no", "no…
+## $ temp_actual &lt;dbl&gt; 57.39952, 46.49166, 46.76000, 48.74943, 46.50332, 44.1770…
+## $ temp_feel   &lt;dbl&gt; 64.72625, 49.04645, 51.09098, 52.63430, 50.79551, 46.6028…
+## $ humidity    &lt;dbl&gt; 80.5833, 43.7273, 59.0435, 43.6957, 49.8696, 53.5833, 48.…
+## $ windspeed   &lt;dbl&gt; 10.749882, 16.636703, 10.739832, 12.522300, 11.304642, 17…
+## $ weather_cat &lt;chr&gt; "categ2", "categ1", "categ1", "categ1", "categ2", "categ2…
+## $ rides       &lt;int&gt; 654, 1229, 1454, 1518, 1362, 891, 1280, 1220, 1137, 1368,…
+```
+
+---
+
+## Rides
+
+`$$Y_i | \mu, \sigma \stackrel{ind}{\sim} N(\mu, \sigma^2)$$`
+
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Regression Model
+
+`\(Y_i\)` the number of rides  
+`\(X_i\)` temperature (in Fahrenheit) on day `\(i\)`. 
+
+--
+
+`\(\mu_i = \beta_0 + \beta_1X_i\)`
+
+--
+
+`\(\beta_0:\)` the typical ridership on days in which the temperature was 0 degrees ( `\(X_i\)`=0). It is not interpretable in this case.
+
+`\(\beta_1:\)` the typical change in ridership for every one unit increase in temperature.
+
+---
+
+## Normal likelihood model
+
+`\begin{split}
+Y_i | \beta_0, \beta_1, \sigma &amp; \stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right) \;\; \text{ with } \;\; \mu_i = \beta_0 + \beta_1X_i \; .\\
+\end{split}`
+
+&lt;img src="slide-08a-snr_files/figure-html/ch-9-normal-assumptions-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Prior Models
+
+`\(\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_i\)`
+
+`\(\text{prior models:}\)` 
+
+`\(\beta_0\sim N(m_0, s_0^2 )\)`  
+`\(\beta_1\sim N(m_1, s_1^2 )\)`  
+`\(\sigma \sim \text{Exp}(l)\)`
+
+--
+
+Recall: `\(\text{Exp}(l) = \text{Gamma}(1, l)\)`
+
+---
+
+## Prior Models
+
+`\begin{split}
+Y_i | \beta_0, \beta_1, \sigma &amp; \stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right) \;\; \text{ with } \;\; \mu_i = \beta_0 + \beta_1X_i \\
+\beta_0  &amp; \sim N\left(3482, 3937^2 \right)  \\
+\beta_1  &amp; \sim N\left(0, 351^2 \right) \\
+\sigma   &amp; \sim \text{Exp}(0.00064) \; .\\
+\end{split}`
+
+
+---
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Simulation via `rstanarm`
+
+
+```r
+normal_model_sim &lt;- stan_glm(
+  rides ~ temp_feel, data = bikes, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735)
+```
+
+
+
+---
+
+
+```r
+prior_summary(normal_model_sim)
+```
+
+```
+## Priors for model 'normal_model_sim' 
+## ------
+## Intercept (after predictors centered)
+##   Specified prior:
+##     ~ normal(location = 3482, scale = 2.5)
+##   Adjusted prior:
+##     ~ normal(location = 3482, scale = 3937)
+## 
+## Coefficients
+##   Specified prior:
+##     ~ normal(location = 0, scale = 2.5)
+##   Adjusted prior:
+##     ~ normal(location = 0, scale = 351)
+## 
+## Auxiliary (sigma)
+##   Specified prior:
+##     ~ exponential(rate = 1)
+##   Adjusted prior:
+##     ~ exponential(rate = 0.00064)
+## ------
+## See help('prior_summary.stanreg') for more details
+```
+
+---
+
+
+```r
+mcmc_trace(normal_model_sim, size = 0.1)
+```
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+mcmc_dens_overlay(normal_model_sim)
+```
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+normal_model_df &lt;- as.data.frame(normal_model_sim)
+head(normal_model_df, 3)
+```
+
+```
+##   (Intercept) temp_feel    sigma
+## 1   -2339.928  84.37713 1289.935
+## 2   -2153.331  81.67121 1250.547
+## 3   -2199.164  81.99670 1313.540
+```
+
+---
+
+
+```r
+# STEP 1: DEFINE the model
+stan_bike_model &lt;- "
+  data {
+    int&lt;lower=0&gt; n;
+    vector[n] Y;
+    vector[n] X;
+  }
+  parameters {
+    real beta0;
+    real beta1;
+    real&lt;lower=0&gt; sigma;
+  }
+  model {
+    Y ~ normal(beta0 + beta1 * X, sigma);
+  }
+"
+```
+
+---
+
+
+```r
+# STEP 2: SIMULATE the posterior
+stan_bike_sim &lt;- stan(
+  model_code = stan_bike_model, 
+  data = list(n = nrow(bikes), Y = bikes$rides, X = bikes$temp_feel), 
+  chains = 4, iter = 5000*2, seed = 84735)
+```
+
+---
+
+## Interpreting the posterior
+
+
+```r
+# Posterior summary statistics
+model_summary &lt;- as.data.frame(summary(normal_model_sim))
+head(model_summary, -2)
+```
+
+```
+##                    mean       mcse         sd         10%         50%
+## (Intercept) -2177.96495 2.51708710 360.669636 -2636.05876 -2174.34098
+## temp_feel      81.86012 0.03605003   5.161012    75.31814    81.83427
+## sigma        1283.12357 0.29332218  40.547168  1231.74044  1282.43943
+##                     90% n_eff     Rhat
+## (Intercept) -1721.62254 20532 1.000031
+## temp_feel      88.42322 20496 1.000028
+## sigma        1335.63969 19109 1.000236
+```
+
+---
+
+
+```r
+# Posterior credible intervals
+posterior_interval(normal_model_sim, prob = 0.80)
+```
+
+```
+##                     10%         90%
+## (Intercept) -2636.05876 -1721.62254
+## temp_feel      75.31814    88.42322
+## sigma        1231.74044  1335.63969
+```
+
+---
+
+
+```r
+# Shade in the 80% CI. For example:
+mcmc_areas(
+  normal_model_sim, 
+  pars = c("(Intercept)"),
+  prob = 0.80,
+  point_est = "mean"
+)
+```
+
+---
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+head(normal_model_df, 3)
+```
+
+```
+##   (Intercept) temp_feel    sigma
+## 1   -2339.928  84.37713 1289.935
+## 2   -2153.331  81.67121 1250.547
+## 3   -2199.164  81.99670 1313.540
+```
+
+```r
+nrow(normal_model_df)
+```
+
+```
+## [1] 20000
+```
+
+---
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+# Tabulate the beta_1 values that exceed 0
+
+normal_model_df %&gt;% 
+  mutate(exceeds_0 = temp_feel &gt; 0) %&gt;% 
+  tabyl(exceeds_0)
+```
+
+```
+##  exceeds_0     n percent
+##       TRUE 20000       1
+```
+
+
+---
+
+
+```r
+sigma_lower &lt;- quantile(normal_model_df$sigma, 0.1) 
+sigma_lower
+```
+
+```
+##     10% 
+## 1231.74
+```
+
+```r
+sigma_upper &lt;- quantile(normal_model_df$sigma, 0.9) 
+sigma_upper
+```
+
+```
+##     90% 
+## 1335.64
+```
+
+```r
+exp_slope &lt;- mean(normal_model_df$temp_feel)
+exp_intercept &lt;- mean(normal_model_df$`(Intercept)`)
+```
+
+---
+
+### Simulate data
+
+
+
+```r
+set.seed(1)
+
+sim_data &lt;- data.frame(x = rep(bikes$temp_feel, 2)) %&gt;% 
+  mutate(y = c(rnorm(500, exp_intercept + exp_slope * x, sigma_lower), 
+               rnorm(500, exp_intercept + exp_slope * x, sigma_upper)),
+    sigma = rep(c("small", "large"), each = 500))
+```
+
+
+---
+
+
+```r
+head(sim_data, 3)
+```
+
+```
+##          x         y sigma
+## 1 64.72625 2348.9052 small
+## 2 49.04645 2063.1843 small
+## 3 51.09098  975.0713 small
+```
+
+
+```r
+tail(sim_data, 3)
+```
+
+```
+##             x         y sigma
+## 998  53.81600 1667.4031 large
+## 999  52.85300  168.1661 large
+## 1000 52.11383 1156.7136 large
+```
+
+---
+
+
+```r
+# Plot the simulated data
+ggplot(sim_data, aes(x = x, y = y)) + 
+  geom_point(size = 0.5) + 
+  facet_grid(~ sigma)
+```
+
+
+---
+
+&lt;img src="slide-08a-snr_files/figure-html/unnamed-chunk-26-1.png" style="display: block; margin: auto;" /&gt;
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "pygments",
+"highlightLines": true,
+"highlightLanguage": "r"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

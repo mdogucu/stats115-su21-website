@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Extending the Normal Regression</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Mine Dogucu" />
+    <script src="slide-09a-beyond-simple_files/header-attrs-2.9/header-attrs.js"></script>
+    <link rel="stylesheet" href="slide-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide
+
+
+
+
+
+
+
+&lt;br&gt;
+&lt;br&gt;
+.right-panel[ 
+
+# Extending the Normal Regression
+## Dr. Mine Dogucu
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+
+```r
+weather_WU &lt;- weather_australia %&gt;% 
+  filter(location %in% c("Wollongong", "Uluru")) %&gt;%
+  mutate(location = droplevels(as.factor(location))) %&gt;% 
+  select(location, windspeed9am, humidity9am, 
+    pressure9am, temp9am, temp3pm)
+```
+
+--
+
+
+```r
+glimpse(weather_WU)
+```
+
+```
+## Rows: 200
+## Columns: 6
+## $ location     &lt;fct&gt; Uluru, Uluru, Uluru, Uluru, Uluru, Uluru, Uluru, Uluru, U…
+## $ windspeed9am &lt;dbl&gt; 20, 9, 7, 28, 24, 22, 22, 4, 2, 9, 20, 20, 9, 22, 9, 24, …
+## $ humidity9am  &lt;int&gt; 23, 71, 15, 29, 10, 32, 43, 57, 64, 40, 28, 30, 95, 47, 7…
+## $ pressure9am  &lt;dbl&gt; 1023.3, 1012.9, 1012.3, 1016.0, 1010.5, 1012.2, 1025.7, 1…
+## $ temp9am      &lt;dbl&gt; 20.9, 23.4, 24.1, 26.4, 36.7, 25.1, 14.9, 15.9, 24.6, 15.…
+## $ temp3pm      &lt;dbl&gt; 29.7, 33.9, 39.7, 34.2, 43.3, 33.5, 24.0, 22.6, 33.2, 24.…
+```
+
+---
+
+
+```r
+ggplot(weather_WU, aes(x = temp9am, y = temp3pm)) +
+  geom_point()
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle
+
+`\(\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_{i1}\)`
+
+`\(\text{prior models:}\)` 
+
+`\(\beta_0\sim N(\ldots, \ldots )\)`  
+`\(\beta_1\sim N(\ldots, \ldots )\)`  
+`\(\sigma \sim \text{Exp}(\ldots)\)`
+
+
+---
+
+class: middle
+
+
+```r
+weather_model_1 &lt;- stan_glm(temp3pm ~ temp9am, 
+                            data = weather_WU,
+                            family = gaussian,
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+
+
+---
+
+
+```r
+mcmc_dens_overlay(weather_model_1)
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+posterior_interval(weather_model_1, prob = 0.80)
+```
+
+```
+##                   10%      90%
+## (Intercept) 2.9197355 5.490149
+## temp9am     0.9785207 1.104129
+## sigma       3.8778471 4.407116
+```
+
+---
+
+
+```r
+pp_check(weather_model_1)
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+### Considering a categorical predictor
+
+
+```r
+ggplot(weather_WU, aes(x = temp3pm, fill = location)) +
+  geom_density(alpha = 0.5)
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle
+
+`$$X_{i2} = \begin{cases}
+1 &amp; \text{ Wollongong} \\
+0 &amp; \text{ otherwise (ie. Uluru)} \\
+\end{cases}$$`
+
+---
+
+class: middle
+
+`\(\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_{i2}\)`
+
+`\(\text{prior models:}\)` 
+
+`\(\beta_0\sim N(\ldots, \ldots )\)`  
+`\(\beta_1\sim N(\ldots, \ldots )\)`  
+`\(\sigma \sim \text{Exp}(\ldots)\)`
+
+--
+
+For Uluru, `\(X_{i2} = 0\)` and the trend in 3pm temperature simplifies to 
+
+`$$\beta_0 + \beta_1 \cdot 0 = \beta_0 \; .$$`
+For Wollongong, `\(X_{i2} = 1\)` and the trend in 3pm temperature is
+
+`$$\beta_0 + \beta_1 \cdot 1 = \beta_0 + \beta_1 \; .$$`
+---
+
+class: middle
+
+### Simulating the Posterior
+
+
+```r
+weather_model_2 &lt;- stan_glm(temp3pm ~ location, 
+                            data = weather_WU, 
+                            family = gaussian, 
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+
+
+---
+
+
+```r
+mcmc_dens_overlay(weather_model_2)
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+# Posterior summary statistics
+model_summary &lt;- summary(weather_model_2)
+head(as.data.frame(model_summary), -2) %&gt;% 
+  select(mean, "10%", "90%", Rhat)
+```
+
+```
+##                          mean        10%       90%      Rhat
+## (Intercept)         29.720510  29.016209 30.432417 0.9999003
+## locationWollongong -10.321964 -11.322672 -9.321884 0.9999647
+## sigma                5.495842   5.153241  5.855416 0.9999023
+```
+
+--
+
+
+```r
+b0 &lt;- model_summary[1,1]
+b1 &lt;- model_summary[2,1]
+```
+
+---
+
+
+```r
+ggplot(weather_WU, aes(x = temp3pm, fill = location)) + 
+  geom_density(alpha = 0.5) + 
+  geom_vline(xintercept = c(b0, b0 + b1), 
+    linetype = "dashed")
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+### Two Predictors
+
+
+```r
+ggplot(weather_WU, 
+    aes(y = temp3pm, x = temp9am, color = location)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle
+
+`\(\text{likelihood model:}\)`
+`\(Y_i | \beta_0, \beta_1, \beta_2 \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2}\)`
+
+`\(\text{prior models:}\)` 
+
+`\(\beta_0\sim N(m_0, s_0 )\)`  
+`\(\beta_1\sim N(m_1, s_1 )\)`  
+`\(\beta_2\sim N(m_2, s_2 )\)`  
+`\(\sigma \sim \text{Exp}(l)\)`
+
+---
+
+class: middle 
+
+In _Uluru_, `\(X_{i2} = 0\)` and the trend in the relationship between 3pm and 9am temperature simplifies to
+
+`$$\beta_0 + \beta_1 X_{i1} + \beta_2 \cdot 0 = \beta_0 + \beta_1 X_{i1} \; .$$`
+
+In _Wollongong_, `\(X_{i2} = 1\)` and the trend in the relationship between 3pm and 9am temperature simplifies to
+
+`$$\beta_0 + \beta_1 X_{i1} + \beta_2 \cdot 1 = (\beta_0 + \beta_2) + \beta_1 X_{i1} \; .$$`
+---
+
+class: middle 
+
+
+```r
+weather_model_3 &lt;- stan_glm(temp3pm ~ temp9am + location, 
+                            data = weather_WU, 
+  
+                            family = gaussian, 
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+
+
+---
+
+
+
+```r
+weather_model_3_df &lt;- as.data.frame(weather_model_3)
+head(weather_model_3_df, 3)
+```
+
+```
+##   (Intercept)   temp9am locationWollongong    sigma
+## 1    11.21958 0.8988170          -7.932687 2.588490
+## 2    10.35556 0.9015759          -6.722425 2.559874
+## 3    10.55716 0.8917270          -6.731531 2.556703
+```
+
+---
+
+
+```r
+first_50 &lt;- head(weather_model_3_df, 50)
+
+ggplot(weather_WU, aes(x = temp9am, y = temp3pm)) + 
+  geom_point(size = 0.01) + 
+  geom_abline(data = first_50, size = 0.1,
+    aes(intercept = `(Intercept)`, slope = temp9am)) + 
+  geom_abline(data = first_50, size = 0.1,
+    aes(intercept = `(Intercept)` + locationWollongong, 
+    slope = temp9am), color = "blue")
+```
+
+---
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+
+```r
+# Simulate a set of predictions
+set.seed(84735)
+temp3pm_prediction &lt;- posterior_predict(
+  weather_model_3, 
+  newdata = data.frame(
+    temp9am = c(10, 10), location = c("Uluru", "Wollongong")))
+```
+
+---
+
+### Posterior Predictive Model
+
+
+```r
+shortcut_df &lt;- data.frame(uluru = temp3pm_prediction[,1],
+                          woll = temp3pm_prediction[,2])
+ggplot(shortcut_df, aes(x = uluru)) +
+  geom_density() +
+  geom_density(aes(x = woll), color = "blue")
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-26-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+ggplot(weather_WU,
+       aes(y = temp3pm, x = humidity9am, color = location)) + 
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-27-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle
+
+`\(\text{likelihood model:}\)`
+`\(Y_i | \beta_0, \beta_1, \beta_2, \beta_3 \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with }\)` 
+`\(\mu_i = \beta_0 + \beta_1X_{i2} + \beta_2X_{i3} + \beta_3X_{i2}X_{i3}\)`
+
+`\(\text{prior models:}\)` 
+
+`\(\beta_0\sim N(m_0, s_0 )\)`  
+`\(\beta_1\sim N(m_1, s_1 )\)`  
+`\(\beta_2\sim N(m_2, s_2 )\)`  
+`\(\beta_3\sim N(m_3, s_3 )\)`  
+`\(\sigma \sim \text{Exp}(l)\)`
+
+---
+
+In _Uluru_, `\(X_{2} = 0\)` and the trend in the relationship between temperature and humidity simplifies to
+
+`$$\mu = \beta_0 + \beta_2 X_{3} \; .$$`
+
+In _Wollongong_, `\(X_{2} = 1\)` and the trend in the relationship between temperature and humidity simplifies to
+
+`$$\mu = \beta_0 + \beta_1 + \beta_2 X_{3} + \beta_3 X_{3} = (\beta_0 + \beta_1) + (\beta_2 + \beta_3) X_3 \; .$$`
+
+---
+
+class: middle
+
+
+```r
+interaction_model &lt;- stan_glm(temp3pm ~ location + humidity9am + 
+                                location:humidity9am,
+                              data = weather_WU, 
+                              family = gaussian,
+                              chains = 4, 
+                              iter = 5000*2, 
+                              seed = 84735)
+```
+
+
+
+---
+
+
+```r
+model_summary &lt;- summary(interaction_model)
+head(as.data.frame(model_summary), -2) %&gt;%
+select(`10%`, `50%`, `90%`) %&gt;%
+round(3)
+```
+
+```
+##                                    10%     50%     90%
+## (Intercept)                     36.430  37.593  38.765
+## locationWollongong             -24.790 -21.886 -18.920
+## humidity9am                     -0.214  -0.190  -0.166
+## locationWollongong:humidity9am   0.198   0.246   0.292
+## sigma                            4.194   4.468   4.774
+```
+
+
+
+
+
+---
+
+class: middle
+
+`$$\begin{array}{lrl}
+\text{Uluru:}      &amp; \mu &amp; =  37.593 - 0.19 \text{ humidity9am} \\
+\text{Wollongong:} &amp; \mu &amp; = (37.593 - 21.886) + (-0.19 + 0.246) \text{ humidity9am}\\
+&amp;&amp; = 15.707 + 0.056 \text{ humidity9am}\\
+\end{array}$$`
+
+---
+
+## Do you need an interaction term?
+
+- __Context.__ 
+
+- __Visualizations.__ 
+
+- __Hypothesis tests.__ 
+
+---
+
+## More than two predictors
+
+`\(\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1,\beta_2,...\beta_p, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with }\)` 
+`\(\mu_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \ldots +\beta_pX_{ip}\)`
+
+`\(\text{prior models:}\)` 
+
+`\(\beta_0, \beta_1,\beta_2, ...,\beta_p\sim N(\ldots, \ldots )\)`  
+ 
+`\(\sigma \sim \text{Exp}(\ldots)\)`
+
+---
+
+class: middle
+
+
+```r
+weather_model_4 &lt;- stan_glm(temp3pm ~ ., 
+                            data = weather_WU, 
+                            family = gaussian, 
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+
+
+---
+
+class: middle center 
+
+## Model evaluation and comparison
+
+&lt;div align="center"&gt;
+
+| Model             | Formula                        |
+|-------------------|--------------------------------|
+| `weather_model_1` | `temp3pm ~ temp9am`            |
+| `weather_model_2` | `temp3pm ~ location`           |
+| `weather_model_3` | `temp3pm ~ temp9am + location` |
+| `weather_model_4` | `temp3pm ~ .`                  |
+
+---
+
+&lt;img src="slide-09a-beyond-simple_files/figure-html/unnamed-chunk-34-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+set.seed(84735)
+predictions_1 &lt;- posterior_predict(weather_model_1, 
+  newdata = weather_WU)
+```
+
+
+
+
+```r
+# Posterior predictive models for weather_model_1
+ppc_intervals(weather_WU$temp3pm, 
+  yrep = predictions_1, 
+  x = weather_WU$temp9am, 
+  prob = 0.5, prob_outer = 0.95)
+
+# Posterior predictive models for weather_model_2
+ppc_violin_grouped(weather_WU$temp3pm, 
+  yrep = predictions_2, 
+  group = weather_WU$location,
+  y_draw = "points")
+```
+
+
+---
+
+
+```r
+prediction_summary_cv(data = weather_WU, 
+                      model = weather_model_1, 
+                      k = 10)
+```
+
+---
+
+class: middle center
+
+
+
+
+
+|                |      |           |          |          |
+|:---------------|:-----|:----------|:---------|:---------|
+|model           |mae   |mae scaled |within 50 |within 95 |
+|weather model 1 |3.285 |0.789      |0.4       |0.97      |
+|weather model 2 |3.652 |0.661      |0.49      |0.94      |
+|weather model 3 |1.142 |0.483      |0.67      |0.96      |
+|weather model 4 |1.207 |0.522      |0.63      |0.95      |
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "pygments",
+"highlightLines": true,
+"highlightLanguage": "r"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

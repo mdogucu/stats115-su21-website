@@ -1,0 +1,221 @@
+---
+title: "Bayes' Rule for Events"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+
+---
+
+## Spam email
+
+Priya, a data science student, notices that her college's email server is using a faulty spam filter.  Taking matters into her own hands, Priya decides to build her own spam filter.  As a first step, she manually examines all emails she received during the previous month and determines that 40% of these were spam.  
+
+---
+
+## Prior 
+
+Let event B represent an event of an email being spam.
+
+$P(B) = 0.40$
+
+If Priya was to act on this prior what should she do about incoming emails?
+
+---
+
+## A possible solution
+
+Since most email is non-spam, sort all emails into the inbox.  
+
+This filter would certainly solve the problem of losing non-spam email in the spam folder, but at the cost of making a mess in Priya's inbox.  
+
+---
+
+## Data
+
+Priya realizes that some emails are written in all capital letters ("all caps") and decides to look at some data. In her one-month email collection, 20% of spam but only 5% of non-spam emails used all caps. 
+
+--
+
+Using notation:
+
+$P(A|B) = 0.20$
+
+$P(A|B^c) = 0.05$
+
+---
+
+<div align = "center">
+
+```{r priya, echo = FALSE, fig.align='center', message = FALSE, warning = FALSE}
+library(DiagrammeR)
+library(tidyverse)
+grViz(diagram = "
+    digraph {
+        # graph aesthetics
+        graph [ranksep = 0.5]
+        # node definitions with substituted label text
+        1 [label = 'Prior: \n Only 40% of emails are spam.']
+        2 [label = 'Data: \n All caps is more common among spam.']
+        3 [label = 'Posterior: \n Is the email spam or not?!']
+        # edge definitions with the node IDs
+        1 -> 3
+        2 -> 3
+    }
+")
+```
+
+</div>
+---
+
+
+Which of the following best describes your posterior understanding of whether the email is spam?
+
+
+a. The chance that this email is spam drops from 40% to 20%.  After all, the subject line might indicate that the email was sent by an excited professor that's offering Priya an automatic "A" in their course!  
+b. The chance that this email is spam jumps from 40% to roughly 70%.  Though using all caps is more common among spam emails, let's not forget that only 40% of Priya's emails are spam.  
+c. The chance that this email is spam jumps from 40% to roughly 95%.  Given that so few non-spam emails use all caps, this email is almost certainly spam.
+
+---
+
+## The prior model
+
+<div align="center">
+
+| event       | $B$ | $B^c$ | Total |
+|-------------|-----|-------|-------|
+| probability | 0.4 | 0.6   | 1     |
+
+
+
+---
+
+## Likelihood
+
+Looking at the conditional probabilities
+
+$P(A|B) = 0.20$
+
+$P(A|B^c) = 0.05$
+
+we can conclude that all caps is more common among spam emails than non-spam emails. Thus, the email is more **likely** to be spam. 
+
+Consider likelihoods $L(.|A)$:
+
+$L(B|A) := P(A|B)$ and $L(B^c|A) := P(A|B^c)$
+
+---
+
+### Probability vs likelihood   
+
+When $B$ is known, the __conditional probability function__ $P(\cdot | B)$ allows us to compare the probabilities of an unknown event, $A$ or $A^c$, occurring with $B$: 
+
+$$P(A|B) \; \text{ vs } \; P(A^c|B) \; .$$  
+
+When $A$ is known, the __likelihood function__ $L( \cdot | A) := P(A | \cdot)$ allows us to compare the likelihoods of different unknown scenarios, $B$ or $B^c$, producing data $A$:
+
+$$L(B|A) \; \text{ vs } \; L(B^c|A) \; .$$
+Thus the likelihood function provides the tool we need to evaluate the relative compatibility of events $B$ or $B^c$ with data $A$. 
+
+---
+
+### The posterior model
+
+$P(B|A) = \frac{P(A\cap B)}{P(A)}$
+
+--
+
+$P(B|A) = \frac{P(B)P(A|B)}{P(A)}$
+
+--
+
+$P(B|A) = \frac{P(B)L(B|A)}{P(A)}$
+
+--
+
+Recall Law of Total Probability,     
+
+$P(A) = P(A\cap B) + P(A\cap B^c)$
+
+$P(A) = P(A|B)P(B) + P(A|B^c)P(B^c)$
+
+---
+
+.pull-left[
+$P(B|A) = \frac{P(B)L(B|A)}{P(A|B) P(B)+P(A|B^c) P(B^c)}$
+]
+
+--
+.pull-right30[
+
+$P(B) = 0.40$
+
+$P(A|B) = 0.20$
+
+$P(A|B^c) = 0.05$
+
+]
+
+--
+
+$P(B|A) = \frac{0.40 \cdot 0.20}{(0.20 \cdot 0.40) + (0.05 \cdot 0.60)}$
+
+---
+
+### The Posterior Model
+<div align="center">
+
+| event                 | $B$  | $B^c$ | Total |
+|-----------------------|------|-------|-------|
+| prior probability     | 0.4  | 0.6   | 1     |
+| posterior probability | 0.72 | 0.18  | 1     |
+
+
+---
+
+<div align="center">
+
+## Likelihood is not a probability distribution
+
+
+| event                 | $B$  | $B^c$ | Total |
+|-----------------------|------|-------|-------|
+| prior probability     | 0.4  | 0.6   | 1     |
+| likelihood            | 0.20 | 0.05  | 0.25  |
+| posterior probability | 0.72 | 0.18  | 1     |
+
+
+
+---
+
+# Summary
+
+$$P(B |A) = \frac{P(B)L(B|A)}{P(A)}$$
+--
+
+$$\text{posterior} = \frac{\text{prior}\cdot\text{likelihood}}{\text{marginal probability}}$$
+
+--
+
+$$\text{posterior} = \frac{\text{prior}\cdot\text{likelihood}}{\text{normalizing constant}}$$

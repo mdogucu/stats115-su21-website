@@ -1,0 +1,184 @@
+---
+title: "Markov Chains"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+class: middle
+
+## MCMC (Markov Chain Monte Carlo) samples
+
+- are *not* taken directly from the posterior pdf.
+- are *not* independent
+- In a given Markov chain, $f\left(\theta^{(i + 1)} \; | \; \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(i)}, y\right) = f\left(\theta^{(i + 1)} \; | \; \theta^{(i)}, y\right)$
+
+---
+
+## Step 1: Definte the Model
+
+```{r}
+bb_model <- "
+  data {
+    int<lower=0, upper=10> Y;
+  }
+  parameters {
+    real<lower=0, upper=1> pi;
+  }
+  model {
+    Y ~ binomial(10, pi);
+    pi ~ beta(2, 2);
+  }
+"
+```
+
+---
+
+## Step 2: Simulate the posterior
+
+```{r cache=TRUE}
+bb_sim <- stan(
+  model_code = bb_model, data = list(Y = 9), 
+  chains = 4, iter = 5000*2, seed = 84735)
+```
+
+---
+
+```{r}
+as.array(bb_sim, pars = "pi") %>% 
+  head(4)
+```
+
+---
+
+```{r}
+as.array(bb_sim, pars = "pi") %>% 
+  tail(4)
+```
+
+
+---
+
+```{r}
+as.array(bb_sim, pars = "pi") %>% 
+  as.data.frame() %>% 
+  mutate(iteration = 1:nrow(.))
+```
+
+---
+
+```{r echo=FALSE}
+as.array(bb_sim, pars = "pi") %>% 
+  as.data.frame() %>% 
+  mutate(iteration = 1:nrow(.)) %>% 
+  slice(1:20) %>% 
+  ggplot(aes(x = iteration, y = `chain:1.pi`)) +
+  geom_line() +
+  ylab("pi")
+```
+
+---
+
+```{r}
+bayesplot::mcmc_trace(bb_sim, pars = "pi", size = 0.5)
+```
+
+---
+
+#### Histogram of the Markov chain values
+
+```{r message=FALSE}
+mcmc_hist(bb_sim, pars = "pi")
+```
+
+---
+
+#### Density plot of the Markov chain values
+
+```{r}
+mcmc_dens(bb_sim, pars = "pi")
+```
+
+---
+
+#### Density plot of the Markov chain values
+
+```{r fig.height=5}
+mcmc_dens(bb_sim, pars = "pi") + 
+  stat_function(fun = dbeta, args = list(11, 3), color = "red")
+```
+
+---
+
+#### Density plot of the individual chains
+
+```{r}
+mcmc_dens_overlay(bb_sim, pars = "pi")
+```
+
+---
+
+### Effective Sample Size
+
+```{r}
+# Summarize the combined values of the 4 long chains
+summary(bb_sim, pars = c("pi"))$summary
+```
+
+$N_{eff}$ is the number of independent sample values it would it take to produce an equivalently accurate posterior approximation.
+
+---
+
+#### Density plot of the individual chains
+
+```{r echo=FALSE}
+mcmc_dens_overlay(bb_sim, pars = "pi")
+```
+
+---
+
+## R-hat
+
+$$\text{R-hat} \approx \sqrt{\frac{\text{Var}_\text{combined}}{\text{Var}_\text{within}}} \; .$$
+where $\text{Var}_\text{combined}$ is the combined variability in $\theta$ across all four chains and $\text{Var}_\text{within}$ is the typical variability within any individual chain.
+
+--
+
+$\text{R-hat} \approx 1$, reflects stability across the parallel chains.
+
+--
+
+$\text{R-hat} > 1$ indicates instability
+
+
+

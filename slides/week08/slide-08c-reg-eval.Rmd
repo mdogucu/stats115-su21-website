@@ -1,0 +1,275 @@
+---
+title: "Evaluating Regression Models"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(bayesrules)
+library(tidyverse)
+library(rstanarm)
+library(bayesplot)
+library(janitor)
+library(rstan)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+1. __How fair is the model?__    
+  
+2. __How wrong is the model?__    
+
+3. __How accurate are the posterior predictive models?__    
+
+---
+
+__Posterior predictive check__
+
+Consider a regression model with response variable $Y$, predictor $X$, and a set of regression parameters $\theta$. For example, in the model above $\theta = (\beta_0,\beta_1,\sigma)$.  Further, let $\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)}\right\rbrace$ be an $N$-length Markov chain for the posterior model of $\theta$.
+Then a "good" Bayesian model will produce _predictions_ of $Y$ with features similar to the _original_ $Y$ data.  To evaluate whether your model satisfies this goal:
+
+1. At each set of posterior plausible parameters $\theta^{(i)}$, simulate a sample of $Y$ values from the likelihood model, one corresponding to each $X$ in the original sample of size $n$.  This produces $N$ separate samples of size $n$.
+2. Compare the features of the $N$ simulated $Y$ samples, or a subset of these samples, to those of the original $Y$ data.
+
+---
+
+```{r echo=FALSE}
+normal_model_sim <- stan_glm(
+  rides ~ temp_feel, data = bikes, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735, refresh = 0)
+normal_model_df <- as.data.frame(normal_model_sim)
+set.seed(84735)
+predict_75 <- normal_model_df %>% 
+  mutate(y_trend = `(Intercept)` + temp_feel*75) %>% 
+  mutate(y_new = rnorm(20000, y_trend, sigma))
+
+```
+
+```{r}
+head(normal_model_df, 1)
+`(Intercept)` <- round(head(normal_model_df, 1)$`(Intercept)`)
+temp_feel     <- round(head(normal_model_df, 1)$temp_feel, 2)
+sigma         <- round(head(normal_model_df, 1)$sigma)
+
+```
+
+---
+
+```{r}
+`(Intercept)`
+temp_feel
+sigma
+```
+
+---
+
+```{r echo = FALSE}
+b01  <- round(head(normal_model_df, 1)[1,1])
+b11  <- round(head(normal_model_df, 1)[1,2],2)
+sig1 <- round(head(normal_model_df, 1)[1,3])
+pred <- b01 + b11*75
+
+```
+
+```{r}
+set.seed(84735)
+one_simulation <- bikes %>% 
+  mutate(simulated_rides = rnorm(
+    500, mean = -2340 + 84.38 * temp_feel, sd = 1290)) %>% 
+  select(temp_feel, rides, simulated_rides)
+```
+
+--
+
+```{r}
+head(one_simulation, 3)
+```
+
+---
+
+```{r fig.height=5}
+ggplot(one_simulation, aes(x = simulated_rides)) + 
+  geom_density(color = "lightblue") + 
+  geom_density(aes(x = rides), color = "darkblue")
+```
+
+---
+
+```{r, fig.width = 15, fig.height=5}
+# Examine 50 of the 20000 simulated samples
+set.seed(84735)
+bayesplot::pp_check(normal_model_sim, nreps = 50)
+```
+
+
+---
+
+```{r}
+bikes %>% 
+  filter(date == "2012-10-22") %>% 
+  select(temp_feel, rides)
+```
+
+```{r echo = FALSE}
+test_case <- bikes %>% 
+  filter(date == "2012-10-22") %>% 
+  select(date, temp_feel, rides)
+```
+
+
+---
+
+class: middle
+
+__observed value__: $Y$  
+__posterior predictive median__: $Y'$  
+__predictive error__: $Y - Y'$
+
+---
+
+```{r}
+predict_75 %>% 
+  summarize(
+    median = median(y_new),
+    error = 6228 - median(y_new))
+```
+
+---
+
+class: middle
+
+__median absolute deviation (mad)__ the typical distance between a posterior prediction and the posterior predictive median.
+
+We estimate the _mad_ by calculating the absolute deviations of our 20,000 posterior predictions of $Y$, $\left\lbrace Y_{\text{new}}^{(1)}, Y_{\text{new}}^{(2)}, \ldots, Y_{\text{new}}^{(20000)}\right\rbrace$, from the posterior predictive median $Y'$ and calculating the median of these deviations:
+
+$$\text{mad} = \text{median}_{i \in \{1,2,\ldots,20000\}} \vert Y_{\text{new}}^{(i)} - Y' \vert \; .$$
+
+---
+
+```{r}
+predict_75 %>% 
+  summarize(
+    error = 6228 - median(y_new),
+    predictive_mad = mad(y_new, constant = 1),
+    error_scaled = error / predictive_mad)
+```
+
+
+---
+
+## Posterior Prediction Interval
+
+```{r}
+predict_75 %>% 
+  summarize(lower_95 = quantile(y_new, 0.025),
+    lower_50 = quantile(y_new, 0.25),
+    upper_50 = quantile(y_new, 0.75),
+    upper_95 = quantile(y_new, 0.975))
+```
+
+---
+
+```{r}
+set.seed(84735)
+predictions <- posterior_predict(normal_model_sim, 
+  newdata = bikes)
+dim(predictions)
+```
+
+
+---
+
+```{r fig.width = 15, fig.height = 5}
+ppc_intervals(bikes$rides, 
+  yrep = predictions, 
+  x = bikes$temp_feel, 
+  prob = 0.5, prob_outer = 0.95)
+```
+
+---
+
+Let $Y_1, Y_2, \ldots, Y_n$ denote $n$ _observed_ outcomes.  Then each $Y_i$ has a corresponding posterior predictive model with _median_ $Y_i'$ and _median absolute deviation_ $\text{mad}_i$.  We can evaluate the overall posterior predictive model quality by the following measures:
+
+- The __median absolute error__  `mae`
+
+    $$\text{mae} = \text{median}_{i \in \{1,2,\ldots,n\}} |Y_i - Y_i'|$$
+
+- The __scaled median absolute error__ `scaled_mae`
+
+    $$\text{mae scaled} = \text{median}_{i \in \{1,2,\ldots,n\}} \frac{|Y_i - Y_i'|}{\text{mad}_i}$$
+
+- `within_50` and `within_95` measure the proportion of observed values $Y_i$ that fall within their 50% and 95% posterior prediction intervals respectively.  
+
+
+---
+ 
+```{r}
+# Posterior predictive summaries
+prediction_summary(y = bikes$rides, 
+  yrep = predictions)
+```
+
+---
+
+__The k-fold cross validation algorithm__
+
+1. __Create folds.__    
+    Let $k$ be some integer from 2 to our original sample size $n$. Split the data into $k$ __folds__, or subsets, of roughly equal size.    
+    
+2. __Train and test the model.__    
+    - _Train_ the model using the first $k - 1$ data folds combined.
+    - _Test_ this model on the $k$th data fold.
+    - Measure the prediction quality (eg: by MAE).
+    
+3. __Repeat.__    
+    Repeat step 2 $k - 1$ times, each time leaving out a different fold for testing.
+    
+4. __Calculate cross-validation estimates.__    
+    Steps 2 and 3 produce $k$ different training models and $k$ corresponding measures of prediction quality. _Average_ these $k$ measures to obtain a single cross-validation estimate of prediction quality.
+    
+---
+
+class: middle
+
+```{r}
+set.seed(84735)
+cv_procedure <- prediction_summary_cv(
+  data = bikes, model = normal_model_sim, k = 10)
+```
+
+---
+
+```{r}
+cv_procedure$folds
+```
+
+---
+
+```{r}
+cv_procedure$cv
+```
+
+

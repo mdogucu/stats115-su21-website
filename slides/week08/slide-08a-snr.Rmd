@@ -1,0 +1,378 @@
+---
+title: "Simple Normal Regression"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(bayesrules)
+library(tidyverse)
+library(rstanarm)
+library(bayesplot)
+library(janitor)
+library(rstan)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+```{r}
+glimpse(bikes)
+```
+
+---
+
+## Rides
+
+$$Y_i | \mu, \sigma \stackrel{ind}{\sim} N(\mu, \sigma^2)$$
+
+
+```{r echo = FALSE, fig.height=5}
+ggplot(data.frame(x = c(-4,4)), aes(x=x)) + 
+  stat_function(fun = dnorm) + 
+  labs(y = expression(paste("f(y|",mu,",",sigma,")")), x = "y (rides)") + 
+  scale_x_continuous(breaks = c(-3,0,3), labels = c(expression(paste(mu,"- 3 / ",sigma)), expression(mu), expression(paste(mu,"+ 3 / ",sigma))))
+```
+
+---
+
+## Regression Model
+
+$Y_i$ the number of rides  
+$X_i$ temperature (in Fahrenheit) on day $i$. 
+
+--
+
+$\mu_i = \beta_0 + \beta_1X_i$
+
+--
+
+$\beta_0:$ the typical ridership on days in which the temperature was 0 degrees ( $X_i$=0). It is not interpretable in this case.
+
+$\beta_1:$ the typical change in ridership for every one unit increase in temperature.
+
+---
+
+## Normal likelihood model
+
+\begin{split}
+Y_i | \beta_0, \beta_1, \sigma & \stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right) \;\; \text{ with } \;\; \mu_i = \beta_0 + \beta_1X_i \; .\\
+\end{split}
+
+```{r ch-9-normal-assumptions, echo = FALSE, fig.width = 8, fig.height = 4, message=FALSE}
+set.seed(454)
+x <- rnorm(100, mean = 68, sd = 12)
+y_1 <- -2511 + 88*x + rnorm(100, mean=0, sd = 2000)
+y_2 <- -2511 + 88*x + rnorm(100, mean=0, sd = 200)
+bikes_sim <- data.frame(x, y_1, y_2) %>% filter(y_1 > 0)
+g1 <- ggplot(bikes_sim, aes(x=x,y=y_1)) + 
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) + 
+    #scale_x_continuous(breaks = c(25)) + 
+    #scale_y_continuous(breaks = c(0,30), limits = c(min(y_1,y_2),max(y_1,y_2))) +
+    lims(y = c(min(y_1,y_2),max(y_1,y_2))) + 
+    labs(x = "x (temp)", y = "y (rides)")
+g2 <- ggplot(bikes_sim, aes(x=x,y=y_2)) + 
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) + 
+    #scale_x_continuous(breaks = c(25)) + 
+    #scale_y_continuous(breaks = c(30), limits = c(min(y_1,y_2),max(y_1,y_2))) + 
+    lims(y = c(min(y_1,y_2),max(y_1,y_2))) + 
+    labs(x = "x (temp)", y = "y (rides)")
+    
+gridExtra::grid.arrange(g1,g2,ncol=2)
+  
+```
+
+---
+
+## Prior Models
+
+$\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_i$
+
+$\text{prior models:}$ 
+
+$\beta_0\sim N(m_0, s_0^2 )$  
+$\beta_1\sim N(m_1, s_1^2 )$  
+$\sigma \sim \text{Exp}(l)$
+
+--
+
+Recall: $\text{Exp}(l) = \text{Gamma}(1, l)$
+
+---
+
+## Prior Models
+
+\begin{split}
+Y_i | \beta_0, \beta_1, \sigma & \stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right) \;\; \text{ with } \;\; \mu_i = \beta_0 + \beta_1X_i \\
+\beta_0  & \sim N\left(3482, 3937^2 \right)  \\
+\beta_1  & \sim N\left(0, 351^2 \right) \\
+\sigma   & \sim \text{Exp}(0.00064) \; .\\
+\end{split}
+
+
+---
+
+```{r echo = FALSE, warning=FALSE, fig.height=6, fig.width=15}
+set.seed(84735)
+
+priors <- data.frame(
+  beta_0 = rnorm(10000, mean = 0, sd = 3937),
+  beta_1 = rnorm(10000, mean = 0, sd = 351),
+  sigma  = rexp(10000, rate = 0.00064)
+)
+
+g1 <- ggplot(priors, aes(x = beta_0)) + 
+  geom_density()
+g2 <- ggplot(priors, aes(x = beta_1)) + 
+  geom_density()
+g3 <- ggplot(priors, aes(x = sigma)) + 
+  geom_density() + 
+  lims(x = c(0,10000))
+gridExtra::grid.arrange(g1,g2,g3,ncol=3)
+```
+
+---
+
+## Simulation via `rstanarm`
+
+```{r eval=FALSE}
+normal_model_sim <- stan_glm(
+  rides ~ temp_feel, data = bikes, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735)
+```
+
+```{r echo=FALSE}
+normal_model_sim <- stan_glm(
+  rides ~ temp_feel, data = bikes, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735, refresh = 0)
+```
+
+---
+
+```{r}
+prior_summary(normal_model_sim)
+```
+
+---
+
+```{r fig.width=12}
+mcmc_trace(normal_model_sim, size = 0.1)
+```
+
+---
+
+```{r fig.width=12, fig.height=6}
+mcmc_dens_overlay(normal_model_sim)
+```
+
+---
+
+```{r}
+normal_model_df <- as.data.frame(normal_model_sim)
+head(normal_model_df, 3)
+```
+
+---
+
+```{r}
+# STEP 1: DEFINE the model
+stan_bike_model <- "
+  data {
+    int<lower=0> n;
+    vector[n] Y;
+    vector[n] X;
+  }
+  parameters {
+    real beta0;
+    real beta1;
+    real<lower=0> sigma;
+  }
+  model {
+    Y ~ normal(beta0 + beta1 * X, sigma);
+  }
+"
+```
+
+---
+
+```{r eval = FALSE}
+# STEP 2: SIMULATE the posterior
+stan_bike_sim <- stan(
+  model_code = stan_bike_model, 
+  data = list(n = nrow(bikes), Y = bikes$rides, X = bikes$temp_feel), 
+  chains = 4, iter = 5000*2, seed = 84735)
+```
+
+---
+
+## Interpreting the posterior
+
+```{r}
+# Posterior summary statistics
+model_summary <- as.data.frame(summary(normal_model_sim))
+head(model_summary, -2)
+```
+
+---
+
+```{r}
+# Posterior credible intervals
+posterior_interval(normal_model_sim, prob = 0.80)
+```
+
+---
+
+```{r eval = FALSE}
+# Shade in the 80% CI. For example:
+mcmc_areas(
+  normal_model_sim, 
+  pars = c("(Intercept)"),
+  prob = 0.80,
+  point_est = "mean"
+)
+```
+
+---
+
+```{r fig.height = 7, echo = FALSE, fig.width = 15}
+# Shade in the middle 80% interval
+g1 <- mcmc_areas(
+  normal_model_sim, 
+  pars = c("(Intercept)"),
+  prob = 0.80, 
+  point_est = "mean"
+)
+g2 <- mcmc_areas(
+  normal_model_sim, 
+  pars = c("temp_feel"),
+  prob = 0.80, 
+  point_est = "mean"
+)
+g3 <- mcmc_areas(
+  normal_model_sim, 
+  pars = c("sigma"),
+  prob = 0.80, 
+  point_est = "mean"
+)
+gridExtra::grid.arrange(g1,g2,g3,ncol=3)
+```
+
+---
+
+```{r}
+head(normal_model_df, 3)
+nrow(normal_model_df)
+```
+
+---
+
+```{r echo=FALSE}
+# The first 100 simulated regression lines
+
+exp_slope <- mean(normal_model_df$temp_feel)
+exp_intercept <- mean(normal_model_df$`(Intercept)`)
+
+first_100 <- head(normal_model_df, 100)
+ggplot(bikes, aes(x = temp_feel, y = rides)) + 
+  geom_point(size = 0.1) + 
+  geom_abline(data = first_100, 
+    aes(intercept = `(Intercept)`, slope = temp_feel), 
+    color = "darkgray", size = 0.1) + 
+  geom_abline(aes(intercept = exp_intercept, slope = exp_slope), 
+    color = "blue")
+```
+
+---
+
+```{r}
+# Tabulate the beta_1 values that exceed 0
+
+normal_model_df %>% 
+  mutate(exceeds_0 = temp_feel > 0) %>% 
+  tabyl(exceeds_0)
+```
+
+
+---
+
+```{r fig.width = 4}
+sigma_lower <- quantile(normal_model_df$sigma, 0.1) 
+sigma_lower
+sigma_upper <- quantile(normal_model_df$sigma, 0.9) 
+sigma_upper
+exp_slope <- mean(normal_model_df$temp_feel)
+exp_intercept <- mean(normal_model_df$`(Intercept)`)
+
+```
+
+---
+
+### Simulate data
+
+
+```{r}
+set.seed(1)
+
+sim_data <- data.frame(x = rep(bikes$temp_feel, 2)) %>% 
+  mutate(y = c(rnorm(500, exp_intercept + exp_slope * x, sigma_lower), 
+               rnorm(500, exp_intercept + exp_slope * x, sigma_upper)),
+    sigma = rep(c("small", "large"), each = 500))
+```
+
+
+---
+
+```{r}
+head(sim_data, 3)
+```
+
+```{r}
+tail(sim_data, 3)
+```
+
+---
+
+```{r eval=FALSE}
+# Plot the simulated data
+ggplot(sim_data, aes(x = x, y = y)) + 
+  geom_point(size = 0.5) + 
+  facet_grid(~ sigma)
+```
+
+
+---
+
+```{r fig.width = 15, echo=FALSE}
+
+# Plot the simulated data
+ggplot(sim_data, aes(x = x, y = y)) + 
+  geom_point(size = 0.5) + 
+  facet_grid(~ sigma)
+```
+

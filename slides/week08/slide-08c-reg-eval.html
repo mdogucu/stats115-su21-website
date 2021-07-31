@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Evaluating Regression Models</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Mine Dogucu" />
+    <script src="slide-08c-reg-eval_files/header-attrs-2.6.6/header-attrs.js"></script>
+    <link rel="stylesheet" href="slide-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide
+
+
+
+
+
+
+
+&lt;br&gt;
+&lt;br&gt;
+.right-panel[ 
+
+# Evaluating Regression Models
+## Dr. Mine Dogucu
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+1. __How fair is the model?__    
+  
+2. __How wrong is the model?__    
+
+3. __How accurate are the posterior predictive models?__    
+
+---
+
+__Posterior predictive check__
+
+Consider a regression model with response variable `\(Y\)`, predictor `\(X\)`, and a set of regression parameters `\(\theta\)`. For example, in the model above `\(\theta = (\beta_0,\beta_1,\sigma)\)`.  Further, let `\(\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)}\right\rbrace\)` be an `\(N\)`-length Markov chain for the posterior model of `\(\theta\)`.
+Then a "good" Bayesian model will produce _predictions_ of `\(Y\)` with features similar to the _original_ `\(Y\)` data.  To evaluate whether your model satisfies this goal:
+
+1. At each set of posterior plausible parameters `\(\theta^{(i)}\)`, simulate a sample of `\(Y\)` values from the likelihood model, one corresponding to each `\(X\)` in the original sample of size `\(n\)`.  This produces `\(N\)` separate samples of size `\(n\)`.
+2. Compare the features of the `\(N\)` simulated `\(Y\)` samples, or a subset of these samples, to those of the original `\(Y\)` data.
+
+---
+
+
+
+
+```r
+head(normal_model_df, 1)
+```
+
+```
+##   (Intercept) temp_feel    sigma
+## 1   -2339.928  84.37713 1289.935
+```
+
+```r
+`(Intercept)` &lt;- round(head(normal_model_df, 1)$`(Intercept)`)
+temp_feel     &lt;- round(head(normal_model_df, 1)$temp_feel, 2)
+sigma         &lt;- round(head(normal_model_df, 1)$sigma)
+```
+
+---
+
+
+```r
+`(Intercept)`
+```
+
+```
+## [1] -2340
+```
+
+```r
+temp_feel
+```
+
+```
+## [1] 84.38
+```
+
+```r
+sigma
+```
+
+```
+## [1] 1290
+```
+
+---
+
+
+
+
+```r
+set.seed(84735)
+one_simulation &lt;- bikes %&gt;% 
+  mutate(simulated_rides = rnorm(
+    500, mean = -2340 + 84.38 * temp_feel, sd = 1290)) %&gt;% 
+  select(temp_feel, rides, simulated_rides)
+```
+
+--
+
+
+```r
+head(one_simulation, 3)
+```
+
+```
+##   temp_feel rides simulated_rides
+## 1  64.72625   654        3982.331
+## 2  49.04645  1229        1638.786
+## 3  51.09098  1454        2978.376
+```
+
+---
+
+
+```r
+ggplot(one_simulation, aes(x = simulated_rides)) + 
+  geom_density(color = "lightblue") + 
+  geom_density(aes(x = rides), color = "darkblue")
+```
+
+&lt;img src="slide-08c-reg-eval_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+# Examine 50 of the 20000 simulated samples
+set.seed(84735)
+bayesplot::pp_check(normal_model_sim, nreps = 50)
+```
+
+&lt;img src="slide-08c-reg-eval_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+
+```r
+bikes %&gt;% 
+  filter(date == "2012-10-22") %&gt;% 
+  select(temp_feel, rides)
+```
+
+```
+##   temp_feel rides
+## 1  75.46478  6228
+```
+
+
+
+
+---
+
+class: middle
+
+__observed value__: `\(Y\)`  
+__posterior predictive median__: `\(Y'\)`  
+__predictive error__: `\(Y - Y'\)`
+
+---
+
+
+```r
+predict_75 %&gt;% 
+  summarize(
+    median = median(y_new),
+    error = 6228 - median(y_new))
+```
+
+```
+##     median    error
+## 1 3946.558 2281.442
+```
+
+---
+
+class: middle
+
+__median absolute deviation (mad)__ the typical distance between a posterior prediction and the posterior predictive median.
+
+We estimate the _mad_ by calculating the absolute deviations of our 20,000 posterior predictions of `\(Y\)`, `\(\left\lbrace Y_{\text{new}}^{(1)}, Y_{\text{new}}^{(2)}, \ldots, Y_{\text{new}}^{(20000)}\right\rbrace\)`, from the posterior predictive median `\(Y'\)` and calculating the median of these deviations:
+
+`$$\text{mad} = \text{median}_{i \in \{1,2,\ldots,20000\}} \vert Y_{\text{new}}^{(i)} - Y' \vert \; .$$`
+
+---
+
+
+```r
+predict_75 %&gt;% 
+  summarize(
+    error = 6228 - median(y_new),
+    predictive_mad = mad(y_new, constant = 1),
+    error_scaled = error / predictive_mad)
+```
+
+```
+##      error predictive_mad error_scaled
+## 1 2281.442       867.8032     2.628986
+```
+
+
+---
+
+## Posterior Prediction Interval
+
+
+```r
+predict_75 %&gt;% 
+  summarize(lower_95 = quantile(y_new, 0.025),
+    lower_50 = quantile(y_new, 0.25),
+    upper_50 = quantile(y_new, 0.75),
+    upper_95 = quantile(y_new, 0.975))
+```
+
+```
+##   lower_95 lower_50 upper_50 upper_95
+## 1 1494.581  3086.11 4822.178 6500.741
+```
+
+---
+
+
+```r
+set.seed(84735)
+predictions &lt;- posterior_predict(normal_model_sim, 
+  newdata = bikes)
+dim(predictions)
+```
+
+```
+## [1] 20000   500
+```
+
+
+---
+
+
+```r
+ppc_intervals(bikes$rides, 
+  yrep = predictions, 
+  x = bikes$temp_feel, 
+  prob = 0.5, prob_outer = 0.95)
+```
+
+&lt;img src="slide-08c-reg-eval_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+Let `\(Y_1, Y_2, \ldots, Y_n\)` denote `\(n\)` _observed_ outcomes.  Then each `\(Y_i\)` has a corresponding posterior predictive model with _median_ `\(Y_i'\)` and _median absolute deviation_ `\(\text{mad}_i\)`.  We can evaluate the overall posterior predictive model quality by the following measures:
+
+- The __median absolute error__  `mae`
+
+    `$$\text{mae} = \text{median}_{i \in \{1,2,\ldots,n\}} |Y_i - Y_i'|$$`
+
+- The __scaled median absolute error__ `scaled_mae`
+
+    `$$\text{mae scaled} = \text{median}_{i \in \{1,2,\ldots,n\}} \frac{|Y_i - Y_i'|}{\text{mad}_i}$$`
+
+- `within_50` and `within_95` measure the proportion of observed values `\(Y_i\)` that fall within their 50% and 95% posterior prediction intervals respectively.  
+
+
+---
+ 
+
+```r
+# Posterior predictive summaries
+prediction_summary(y = bikes$rides, 
+  yrep = predictions)
+```
+
+```
+##        mae mae_scaled within_50 within_95
+## 1 989.8291   1.144095      0.44     0.968
+```
+
+---
+
+__The k-fold cross validation algorithm__
+
+1. __Create folds.__    
+    Let `\(k\)` be some integer from 2 to our original sample size `\(n\)`. Split the data into `\(k\)` __folds__, or subsets, of roughly equal size.    
+    
+2. __Train and test the model.__    
+    - _Train_ the model using the first `\(k - 1\)` data folds combined.
+    - _Test_ this model on the `\(k\)`th data fold.
+    - Measure the prediction quality (eg: by MAE).
+    
+3. __Repeat.__    
+    Repeat step 2 `\(k - 1\)` times, each time leaving out a different fold for testing.
+    
+4. __Calculate cross-validation estimates.__    
+    Steps 2 and 3 produce `\(k\)` different training models and `\(k\)` corresponding measures of prediction quality. _Average_ these `\(k\)` measures to obtain a single cross-validation estimate of prediction quality.
+    
+---
+
+class: middle
+
+
+```r
+set.seed(84735)
+cv_procedure &lt;- prediction_summary_cv(
+  data = bikes, model = normal_model_sim, k = 10)
+```
+
+---
+
+
+```r
+cv_procedure$folds
+```
+
+```
+##    fold       mae mae_scaled within_50 within_95
+## 1     1  982.3498  1.1347732      0.46      0.98
+## 2     2  962.4132  1.1042769      0.40      1.00
+## 3     3  956.3402  1.1045559      0.42      0.98
+## 4     4 1011.6086  1.1598395      0.46      0.98
+## 5     5 1180.3943  1.3649528      0.40      0.96
+## 6     6  932.9605  1.0620776      0.46      0.94
+## 7     7 1267.7214  1.4886004      0.32      0.96
+## 8     8 1117.9843  1.2874389      0.36      1.00
+## 9     9 1108.5276  1.3011456      0.40      0.92
+## 10   10  789.2742  0.9012649      0.56      0.94
+```
+
+---
+
+
+```r
+cv_procedure$cv
+```
+
+```
+##        mae mae_scaled within_50 within_95
+## 1 1030.957   1.190893     0.424     0.966
+```
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "pygments",
+"highlightLines": true,
+"highlightLanguage": "r"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

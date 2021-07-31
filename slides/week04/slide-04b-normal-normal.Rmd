@@ -1,0 +1,234 @@
+---
+title: "The Normal-Normal Model"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(bayesrules)
+library(tidyverse)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+class: middle
+
+## Data
+Let $(Y_1,Y_2,\ldots,Y_{25})$ denote the hippocampal volumes for volumes for the  
+$n = 25$ study subjects who played collegiate American football and who have been diagnosed with concussions:
+
+```{r}
+# Load the data
+data(football)
+
+# Filter and scale the data from microliters to cubic cm
+football <- football %>%
+  filter(group == "fb_concuss") %>% 
+  mutate(volume = hipp / 1000)
+```
+
+---
+
+## Data
+
+
+```{r}
+football %>%
+  summarize(mean(volume), sd(volume))
+```
+
+---
+
+## Data
+
+```{r fig.height=5}
+ggplot(football, aes(x = volume)) + 
+  geom_density()
+```
+
+---
+
+__The Normal model__
+
+Let $Y$ be a random variable which can take any value between $-\infty$ and $\infty$, ie. $Y \in (-\infty,\infty)$.  Then the variability in $Y$ might be well represented by a Normal model with __mean parameter__ $\mu \in (-\infty, \infty)$ and __standard deviation parameter__ $\sigma > 0$: 
+
+$$Y \sim N(\mu, \sigma^2)$$
+
+The Normal model is specified by continuous pdf
+
+\begin{equation}
+f(y) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\bigg[{-\frac{(y-\mu)^2}{2\sigma^2}}\bigg] \;\; \text{ for } y \in (-\infty,\infty)
+\end{equation}
+
+
+---
+
+__Trends and variability of the Normal model__
+
+$$\begin{split}
+E(Y) & = \text{ Mode}(Y) = \mu \\
+\text{Var}(Y) & = \sigma^2 \\
+\end{split}$$
+
+Further, $\sigma$ provides a sense of scale for $Y$. Roughly 95% of $Y$ values will be within 2 standard deviations of $\mu$:
+
+\begin{equation}
+\mu \pm 2\sigma \; .
+\end{equation}
+
+
+
+
+---
+
+__Normal models__
+
+
+```{r echo=FALSE, normal-tuning, fig.width = 4.5, message=FALSE, fig.width=12}
+
+# Set up gamma data
+mu <- c(2,2,4)
+sigma  <- c(.5,1,2)
+sigma.sq<-sigma^2
+normals <- data.frame(setting = factor(rep(1:3, each = 500)), 
+                    x = rep(seq(-2, 10, length = 500), 3),
+                    mu = rep(mu, each = 500), 
+                    sigma = rep(sigma, each = 500))
+normals <- normals %>% 
+    mutate(y = dnorm(x, mean = mu, sd = sigma))
+levels(normals$setting) <- paste0("N(",mu,",",sigma.sq,")")
+g <- ggplot(normals, aes(x = x, y = y)) + 
+  geom_line() + 
+  facet_wrap(~ setting) + 
+  labs(x = "y", y = "f(y)") + 
+  scale_y_continuous(breaks = c(0,2,4,6,8,10)) + 
+  lims(y = c(0,0.8)) 
+  
+g 
+``` 
+
+---
+
+## Normal Likelihood
+
+$$L(\mu |\vec{y})= \prod_{i=1}^{n}L(\mu | y_i) = \prod_{i=1}^{n}\frac{1}{\sqrt{2\pi\sigma^2}} \exp\bigg[{-\frac{(y_i-\mu)^2}{2\sigma^2}}\bigg].$$
+
+Simplifying this up to a _proportionality_ constant
+
+$$L(\mu |\vec{y}) \propto \prod_{i=1}^{n} \exp\bigg[{-\frac{(y_i-\mu)^2}{2\sigma^2}}\bigg] =  \exp\bigg[{-\frac{\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}}\bigg] \; .$$
+
+--
+
+\begin{equation}
+L(\mu | \vec{y}) \propto \exp\bigg[{-\frac{(\bar{y}-\mu)^2}{2\sigma^2/n}}\bigg] \;\;\;\; \text{ for } \; \mu \in (-\infty, \infty).
+\end{equation}
+
+---
+
+$$L(\mu | \vec{y}) \propto \exp\bigg[{-\frac{(5.735-\mu)^2}{2(0.593^2/25)}}\bigg] \;\;\;\; \text{ for } \; \mu \in (-\infty, \infty),$$ 
+
+
+```{r likelihood-hippocampus-ch5, fig.cap='The joint Normal likelihood function for the mean hippocampal volume.', echo = FALSE}
+
+mus <- data.frame(mu = seq(5.25, 6.22, by = 0.001)) %>% 
+  mutate(likelihood = dnorm(x = 5.735, mean = mu, sd = 0.593/sqrt(25)))
+# Likelihood function evaluated at each theta
+like_fun <- function(x){dnorm(x = 5.735, mean = x, sd = 0.593/sqrt(25))}
+ggplot(mus, aes(x = mu, y = likelihood)) + 
+    lims(x = c(5.25, 6.22)) + 
+    stat_function(fun = like_fun)  +
+    labs(x = expression(mu), y = expression(paste("L(",mu, "|", bar(y), "= 5.735)"))) 
+```
+
+---
+
+## Normal prior
+
+$$\mu \sim N(\theta, \tau^2) \; , $$
+
+with prior pdf 
+
+\begin{equation}
+f(\mu) = \frac{1}{\sqrt{2\pi\tau^2}} \exp\bigg[{-\frac{(\mu - \theta)^2}{2\tau^2}}\bigg] \;\; \text{ for } \mu \in (-\infty,\infty) \; .
+\end{equation}
+
+
+--
+
+[Wikipedia](https://en.wikipedia.org/wiki/Hippocampus) tells us that among the general population of human adults, both halves of the hippocampus have a volume between 3.0 and 3.5 cubic centimeters.
+Thus the _total_ hippocampal volume of _both_ sides of the brain is between 6 and 7 cubic centimeters.
+
+--
+
+$$\mu \sim N(6.5, 0.5^2) \;.$$
+---
+
+```{r}
+plot_normal(mean = 6.5, sd = 0.5)
+```
+
+---
+
+__The Normal-Normal Bayesian model__
+
+Let $\mu \in (-\infty,\infty)$ be an unknown _mean_ parameter and $(Y_1,Y_2,\ldots,Y_n)$ be an independent $N(\mu,\sigma^2)$ sample where $\sigma$ is assumed to be _known_.
+The Normal-Normal Bayesian model complements the Normal structure of the data with a Normal prior on $\mu$:
+
+$$\begin{split}
+Y_i | \mu & \stackrel{ind}{\sim} N(\mu, \sigma^2) \\
+\mu & \sim N(\theta, \tau^2) \\
+\end{split}$$
+
+Upon observing data $\vec{y} = (y_1,y_2,\ldots,y_n)$, the posterior model of $\mu$ is also a Normal with updated parameters:
+
+\begin{equation}
+\mu|\vec{y} \; \sim \;  N\bigg(\frac{\theta\sigma^2/n + \bar{y}\tau^2}{\tau^2+\sigma^2/n}, \; \frac{\tau^2\sigma^2/n}{\tau^2+\sigma^2/n}\bigg) \; .
+\end{equation}
+
+---
+
+The posterior model of $\mu$ is:
+
+$$\mu | \vec{y} \; \sim \; N\bigg(\frac{6.5*0.593^2/25 + 5.734*0.5^2}{0.5^2+0.593^2/25}, \; \frac{0.5^2*0.593^2/25}{0.5^2+0.593^2/25}\bigg)\;,$$
+
+or, further simplified,
+
+$$\mu | \vec{y} \; \sim \; N\bigg(5.775, 0.115^2 \bigg) \; .$$
+
+---
+
+```{r fig.width=9}
+plot_normal_normal(mean = 6.5, sd = 0.5, sigma = 0.593, 
+  y_bar = 5.734, n = 25)
+```
+
+---
+
+```{r}
+
+summarize_normal_normal(mean = 6.5, sd = 0.5, sigma = 0.593, 
+  y_bar = 5.735, n = 25)
+```

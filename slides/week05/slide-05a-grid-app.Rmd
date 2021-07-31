@@ -1,0 +1,369 @@
+---
+title: "Grid Approximation"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(bayesrules)
+library(tidyverse)
+library(janitor)
+library(ggforce)
+library(gridExtra)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+class: middle
+
+## Specifying the Posterior
+
+$Y | \pi \sim \text{Bin}(10, \pi)$  
+$\pi \sim \text{Beta}(2,2)$  
+
+--
+
+Suppose $Y = 9$
+
+--
+
+Then $\pi|(Y = 9) \sim \text{Beta}(11,3)$
+
+---
+
+## Step 1: Define a grid of 6 pi values
+
+```{r}
+pi_grid   <- seq(from = 0, to = 1, length = 6)
+pi_grid
+grid_data <- data.frame(pi_grid)
+```
+
+---
+
+### Step 2: Evaluate the prior and likelihood at each pi
+
+```{r}
+grid_data <- grid_data %>% 
+  mutate(prior = dbeta(pi_grid, 2, 2))
+
+```
+
+--
+
+.pull-left[
+```{r}
+grid_data
+```
+
+]
+
+--
+
+.pull-right[
+
+```{r echo = FALSE, fig.height=3}
+ggplot(grid_data, 
+       aes(x = pi_grid,
+           y = prior)) +
+  geom_point() +
+    geom_segment(aes(x = pi_grid, xend = pi_grid, 
+    y = 0, yend = prior))
+```
+
+]
+
+---
+
+### Step 2: Evaluate the prior and likelihood at each pi
+
+```{r}
+grid_data <- grid_data %>% 
+  mutate(prior = dbeta(pi_grid, 2, 2)) %>% 
+  mutate(likelihood = dbinom(9, 10, pi_grid))
+
+```
+
+--
+
+.pull-left[
+```{r}
+grid_data
+```
+
+]
+
+--
+
+.pull-right[
+
+```{r echo = FALSE, fig.height=3}
+ggplot(grid_data, 
+       aes(x = pi_grid,
+           y = likelihood)) +
+  geom_point() +
+    geom_segment(aes(x = pi_grid, xend = pi_grid, 
+    y = 0, yend = likelihood))
+```
+]
+
+---
+
+## Step 3: Approximate the posterior
+
+```{r}
+grid_data <- grid_data %>% 
+  mutate(unnormalized = likelihood * prior) 
+
+grid_data
+```
+
+
+---
+
+## Step 3: Approximate the posterior
+
+```{r}
+grid_data <- grid_data %>% 
+  mutate(unnormalized = likelihood * prior) %>% 
+  mutate(posterior = unnormalized / sum(unnormalized))
+
+grid_data
+```
+
+---
+
+## Step 3: Approximate the posterior
+
+```{r}
+grid_data <- grid_data %>% 
+  mutate(unnormalized = likelihood * prior) %>% 
+  mutate(posterior = unnormalized / sum(unnormalized))
+```
+
+Confirm that the posterior approximation sums to 1
+
+
+```{r}
+grid_data %>% 
+  summarize(sum(unnormalized), sum(posterior))
+```
+
+---
+
+## The Grid Approximated Posterior
+
+.pull-left[
+```{r eval = FALSE}
+ggplot(grid_data, 
+       aes(x = pi_grid, y = posterior)) + 
+  geom_point() + 
+  geom_segment(aes(x = pi_grid, 
+                   xend = pi_grid, 
+                   y = 0, 
+                   yend = posterior))
+```
+
+]
+
+.pull-right[
+```{r echo = FALSE, fig.height=5}
+ggplot(grid_data, aes(x = pi_grid, y = posterior)) + 
+  geom_point() + 
+  geom_segment(aes(x = pi_grid, xend = pi_grid, 
+    y = 0, yend = posterior))
+```
+
+]
+
+---
+
+## Step 4: Sample from the Discretized Posterior
+
+```{r}
+set.seed(84735)
+post_sample <- sample_n(grid_data, size = 10000, 
+  weight = posterior, replace = TRUE)
+```
+
+--
+
+```{r}
+post_sample %>% 
+  tabyl(pi_grid) %>% 
+  adorn_totals("row")
+```
+
+---
+
+## Grid Simulation with the Posterior pdf
+
+.pull-left[
+```{r message = FALSE, eval = FALSE}
+ggplot(post_sample, aes(x = pi_grid)) + 
+  geom_histogram(aes(y = ..density..), 
+                 color = "white") + 
+  stat_function(fun = dbeta, 
+                args = list(11, 3)) + 
+  lims(x = c(0, 1))
+```
+]
+
+.pull-right[
+```{r message = FALSE, echo = FALSE, warning=FALSE, fig.height=5}
+ggplot(post_sample, aes(x = pi_grid)) + 
+  geom_histogram(aes(y = ..density..), color = "white") + 
+  stat_function(fun = dbeta, args = list(11, 3)) + 
+  lims(x = c(0, 1))
+```
+]
+
+
+---
+
+Let's increase the possible $\pi$ values from 6 to 101.
+
+```{r}
+pi_grid   <- seq(from = 0, to = 1, length = 101)
+```
+
+
+```{r echo = FALSE, fig.height=5}
+# Step 1: Define a grid of 101 pi values
+pi_grid    <- seq(from = 0, to = 1, length = 101)
+grid_data  <- data.frame(pi_grid)
+
+# Step 2: Evaluate the prior & likelihood at each pi
+grid_data <- grid_data %>% 
+  mutate(prior = dbeta(pi_grid, 2, 2)) %>% 
+  mutate(likelihood = dbinom(9, 10, pi_grid))
+
+# Step 3: Approximate the posterior
+grid_data <- grid_data %>% 
+  mutate(unnormalized = likelihood * prior) %>% 
+  mutate(posterior = unnormalized / sum(unnormalized))
+```
+
+---
+
+## Grid simulation with posterior pdf
+
+```{r echo=FALSE}
+# Set the seed
+set.seed(84735)
+
+# Step 4: sample from the discretized posterior
+post_sample <- sample_n(grid_data, size = 10000, 
+  weight = posterior, replace = TRUE)
+```
+
+
+.pull-left[
+```{r message = FALSE, eval = FALSE}
+ggplot(post_sample, aes(x = pi_grid)) + 
+  geom_histogram(aes(y = ..density..), 
+                 color = "white") + 
+  stat_function(fun = dbeta, 
+                args = list(11, 3)) + 
+  lims(x = c(0, 1))
+```
+]
+
+.pull-right[
+```{r message = FALSE, echo = FALSE, warning=FALSE, fig.height=5}
+ggplot(post_sample, aes(x = pi_grid)) + 
+  geom_histogram(aes(y = ..density..), 
+                 color = "white") + 
+  stat_function(fun = dbeta, args = list(11, 3)) + 
+  lims(x = c(0, 1))
+```
+]
+
+
+---
+
+## Grid approximation
+
+
+```{r echo=FALSE, fig.height=3}
+# Alt Text: Three images of a rainbow. The first image shows only a few "slices" of the rainbow, the second image shows even more slices for a fuller image of the rainbow, and the third shows the complete rainbow.
+
+# full rainbow
+g <- ggplot() + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 2), fill = "red", color = "red") + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 1.8), fill = "orange", color = "orange") + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 1.6), fill = "yellow", color = "yellow") + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 1.4), fill = "green", color = "green") + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 1.2), fill = "blue", color = "blue") + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 1), fill = "purple", color = "purple") + 
+  geom_circle(aes(x0 = 0, y0 = 0, r = 0.8), fill = "white", color = "white") + 
+  coord_cartesian(ylim = c(0,2), xlim = c(-2,2)) + 
+  theme_void()
+
+
+# define rectangles
+n   <- 21
+x1  <- seq(-2, 2, length = n)
+x2  <- c(x1[-length(x1)] + 0.1*diff(x1), max(x1))
+y1  <- rep(-0.5, length(x2))
+y2  <- rep(2.1, length(x2))
+
+rect_df <- data.frame(x1, x2, y1, y2)
+g3 <- g + geom_rect(data = rect_df, aes(xmin = x1, xmax = x2, ymin = y1, ymax = y2), color = "white", fill = "white")
+
+
+x1new <- x1[-c(2*(1:(0.5*(length(x1)+1))))]
+x2new <- x2[-1]
+x2new <- c(x2new[-c(2*(1:(0.5*(length(x2new)+1))))], max(x1new))
+y1new  <- rep(-0.5, length(x2new))
+y2new  <- rep(2.1, length(x2new))
+rect_df <- data.frame(x1=x1new, x2=x2new, y1=y1new, y2=y2new)
+g2 <- g + geom_rect(data = rect_df, aes(xmin = x1, xmax = x2, ymin = y1, ymax = y2), color = "white", fill = "white")
+
+
+x1new <- x1new[-c(2*(1:(0.5*(length(x1new)+1))))]
+x2new <- x2new[-1]
+x2new <- c(x2new[-c(2*(1:(0.5*(length(x2new)+1))))], max(x1new))
+y1new  <- rep(-0.5, length(x2new))
+y2new  <- rep(2.1, length(x2new))
+rect_df <- data.frame(x1=x1new, x2=x2new, y1=y1new, y2=y2new)
+g1 <- g + geom_rect(data = rect_df, aes(xmin = x1, xmax = x2, ymin = y1, ymax = y2), color = "white", fill = "white")
+
+#grid.arrange(g1,g2,g3,g,ncol=2)
+grid.arrange(g1, g3, g, ncol=3)
+```
+
+---
+
+### Grid approximation
+
+Grid approximation produces a sample of $N$ __independent__ $\theta$ values, $\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)} \right\rbrace$, from a __discretized approximation__ of posterior pdf $f(\theta|y)$.  This algorithm evolves in four steps:
+
+1. Define a discrete grid of possible $\theta$ values.
+2. Evaluate the prior pdf $f(\theta)$ and likelihood function $L(\theta|y)$ at each $\theta$ grid value.
+3. Obtain a discrete approximation of posterior pdf $f(\theta |y)$ by: (a) calculating the product $f(\theta)L(\theta|y)$ at each $\theta$ grid value; and then (b) *normalizing* the products so that they sum to 1 across all $\theta$.
+4. Randomly sample $N$ $\theta$ grid values with respect to their corresponding normalized posterior probabilities.
+

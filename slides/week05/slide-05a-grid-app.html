@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Grid Approximation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Mine Dogucu" />
+    <script src="slide-05a-grid-app_files/header-attrs-2.6.6/header-attrs.js"></script>
+    <link rel="stylesheet" href="slide-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide
+
+
+
+
+
+
+
+&lt;br&gt;
+&lt;br&gt;
+.right-panel[ 
+
+# Grid Approximation
+## Dr. Mine Dogucu
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+class: middle
+
+## Specifying the Posterior
+
+`\(Y | \pi \sim \text{Bin}(10, \pi)\)`  
+`\(\pi \sim \text{Beta}(2,2)\)`  
+
+--
+
+Suppose `\(Y = 9\)`
+
+--
+
+Then `\(\pi|(Y = 9) \sim \text{Beta}(11,3)\)`
+
+---
+
+## Step 1: Define a grid of 6 pi values
+
+
+```r
+pi_grid   &lt;- seq(from = 0, to = 1, length = 6)
+pi_grid
+```
+
+```
+## [1] 0.0 0.2 0.4 0.6 0.8 1.0
+```
+
+```r
+grid_data &lt;- data.frame(pi_grid)
+```
+
+---
+
+### Step 2: Evaluate the prior and likelihood at each pi
+
+
+```r
+grid_data &lt;- grid_data %&gt;% 
+  mutate(prior = dbeta(pi_grid, 2, 2))
+```
+
+--
+
+.pull-left[
+
+```r
+grid_data
+```
+
+```
+##   pi_grid prior
+## 1     0.0  0.00
+## 2     0.2  0.96
+## 3     0.4  1.44
+## 4     0.6  1.44
+## 5     0.8  0.96
+## 6     1.0  0.00
+```
+
+]
+
+--
+
+.pull-right[
+
+&lt;img src="slide-05a-grid-app_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+### Step 2: Evaluate the prior and likelihood at each pi
+
+
+```r
+grid_data &lt;- grid_data %&gt;% 
+  mutate(prior = dbeta(pi_grid, 2, 2)) %&gt;% 
+  mutate(likelihood = dbinom(9, 10, pi_grid))
+```
+
+--
+
+.pull-left[
+
+```r
+grid_data
+```
+
+```
+##   pi_grid prior  likelihood
+## 1     0.0  0.00 0.000000000
+## 2     0.2  0.96 0.000004096
+## 3     0.4  1.44 0.001572864
+## 4     0.6  1.44 0.040310784
+## 5     0.8  0.96 0.268435456
+## 6     1.0  0.00 0.000000000
+```
+
+]
+
+--
+
+.pull-right[
+
+&lt;img src="slide-05a-grid-app_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Step 3: Approximate the posterior
+
+
+```r
+grid_data &lt;- grid_data %&gt;% 
+  mutate(unnormalized = likelihood * prior) 
+
+grid_data
+```
+
+```
+##   pi_grid prior  likelihood unnormalized
+## 1     0.0  0.00 0.000000000 0.000000e+00
+## 2     0.2  0.96 0.000004096 3.932160e-06
+## 3     0.4  1.44 0.001572864 2.264924e-03
+## 4     0.6  1.44 0.040310784 5.804753e-02
+## 5     0.8  0.96 0.268435456 2.576980e-01
+## 6     1.0  0.00 0.000000000 0.000000e+00
+```
+
+
+---
+
+## Step 3: Approximate the posterior
+
+
+```r
+grid_data &lt;- grid_data %&gt;% 
+  mutate(unnormalized = likelihood * prior) %&gt;% 
+  mutate(posterior = unnormalized / sum(unnormalized))
+
+grid_data
+```
+
+```
+##   pi_grid prior  likelihood unnormalized    posterior
+## 1     0.0  0.00 0.000000000 0.000000e+00 0.000000e+00
+## 2     0.2  0.96 0.000004096 3.932160e-06 1.236472e-05
+## 3     0.4  1.44 0.001572864 2.264924e-03 7.122080e-03
+## 4     0.6  1.44 0.040310784 5.804753e-02 1.825311e-01
+## 5     0.8  0.96 0.268435456 2.576980e-01 8.103344e-01
+## 6     1.0  0.00 0.000000000 0.000000e+00 0.000000e+00
+```
+
+---
+
+## Step 3: Approximate the posterior
+
+
+```r
+grid_data &lt;- grid_data %&gt;% 
+  mutate(unnormalized = likelihood * prior) %&gt;% 
+  mutate(posterior = unnormalized / sum(unnormalized))
+```
+
+Confirm that the posterior approximation sums to 1
+
+
+
+```r
+grid_data %&gt;% 
+  summarize(sum(unnormalized), sum(posterior))
+```
+
+```
+##   sum(unnormalized) sum(posterior)
+## 1         0.3180144              1
+```
+
+---
+
+## The Grid Approximated Posterior
+
+.pull-left[
+
+```r
+ggplot(grid_data, 
+       aes(x = pi_grid, y = posterior)) + 
+  geom_point() + 
+  geom_segment(aes(x = pi_grid, 
+                   xend = pi_grid, 
+                   y = 0, 
+                   yend = posterior))
+```
+
+]
+
+.pull-right[
+&lt;img src="slide-05a-grid-app_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+## Step 4: Sample from the Discretized Posterior
+
+
+```r
+set.seed(84735)
+post_sample &lt;- sample_n(grid_data, size = 10000, 
+  weight = posterior, replace = TRUE)
+```
+
+--
+
+
+```r
+post_sample %&gt;% 
+  tabyl(pi_grid) %&gt;% 
+  adorn_totals("row")
+```
+
+```
+##  pi_grid     n percent
+##      0.4    69  0.0069
+##      0.6  1885  0.1885
+##      0.8  8046  0.8046
+##    Total 10000  1.0000
+```
+
+---
+
+## Grid Simulation with the Posterior pdf
+
+.pull-left[
+
+```r
+ggplot(post_sample, aes(x = pi_grid)) + 
+  geom_histogram(aes(y = ..density..), 
+                 color = "white") + 
+  stat_function(fun = dbeta, 
+                args = list(11, 3)) + 
+  lims(x = c(0, 1))
+```
+]
+
+.pull-right[
+&lt;img src="slide-05a-grid-app_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+Let's increase the possible `\(\pi\)` values from 6 to 101.
+
+
+```r
+pi_grid   &lt;- seq(from = 0, to = 1, length = 101)
+```
+
+
+
+
+---
+
+## Grid simulation with posterior pdf
+
+
+
+
+.pull-left[
+
+```r
+ggplot(post_sample, aes(x = pi_grid)) + 
+  geom_histogram(aes(y = ..density..), 
+                 color = "white") + 
+  stat_function(fun = dbeta, 
+                args = list(11, 3)) + 
+  lims(x = c(0, 1))
+```
+]
+
+.pull-right[
+&lt;img src="slide-05a-grid-app_files/figure-html/unnamed-chunk-24-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+## Grid approximation
+
+
+&lt;img src="slide-05a-grid-app_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+### Grid approximation
+
+Grid approximation produces a sample of `\(N\)` __independent__ `\(\theta\)` values, `\(\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)} \right\rbrace\)`, from a __discretized approximation__ of posterior pdf `\(f(\theta|y)\)`.  This algorithm evolves in four steps:
+
+1. Define a discrete grid of possible `\(\theta\)` values.
+2. Evaluate the prior pdf `\(f(\theta)\)` and likelihood function `\(L(\theta|y)\)` at each `\(\theta\)` grid value.
+3. Obtain a discrete approximation of posterior pdf `\(f(\theta |y)\)` by: (a) calculating the product `\(f(\theta)L(\theta|y)\)` at each `\(\theta\)` grid value; and then (b) *normalizing* the products so that they sum to 1 across all `\(\theta\)`.
+4. Randomly sample `\(N\)` `\(\theta\)` grid values with respect to their corresponding normalized posterior probabilities.
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "pygments",
+"highlightLines": true,
+"highlightLanguage": "r"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

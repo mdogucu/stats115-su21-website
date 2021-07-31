@@ -1,0 +1,567 @@
+---
+title: "Extending the Normal Regression"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(bayesrules)
+library(tidyverse)
+library(rstanarm)
+library(bayesplot)
+library(janitor)
+library(rstan)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+```{r}
+weather_WU <- weather_australia %>% 
+  filter(location %in% c("Wollongong", "Uluru")) %>%
+  mutate(location = droplevels(as.factor(location))) %>% 
+  select(location, windspeed9am, humidity9am, 
+    pressure9am, temp9am, temp3pm)
+```
+
+--
+
+```{r}
+glimpse(weather_WU)
+```
+
+---
+
+```{r fig.height=6}
+ggplot(weather_WU, aes(x = temp9am, y = temp3pm)) +
+  geom_point()
+```
+
+---
+
+class: middle
+
+$\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_{i1}$
+
+$\text{prior models:}$ 
+
+$\beta_0\sim N(\ldots, \ldots )$  
+$\beta_1\sim N(\ldots, \ldots )$  
+$\sigma \sim \text{Exp}(\ldots)$
+
+
+---
+
+class: middle
+
+```{r eval=FALSE}
+weather_model_1 <- stan_glm(temp3pm ~ temp9am, 
+                            data = weather_WU,
+                            family = gaussian,
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+```{r echo=FALSE, cache=TRUE}
+weather_model_1 <- stan_glm(
+temp3pm ~ temp9am, data = weather_WU,
+family = gaussian,
+chains = 4, iter = 5000*2, seed = 84735, refresh=FALSE)
+
+```
+
+---
+
+```{r fig.width=15}
+mcmc_dens_overlay(weather_model_1)
+```
+
+---
+
+```{r}
+posterior_interval(weather_model_1, prob = 0.80)
+```
+
+---
+
+```{r}
+pp_check(weather_model_1)
+```
+
+---
+
+### Considering a categorical predictor
+
+```{r fig.width=10, fig.height=5}
+ggplot(weather_WU, aes(x = temp3pm, fill = location)) +
+  geom_density(alpha = 0.5)
+```
+
+---
+
+class: middle
+
+$$X_{i2} = \begin{cases}
+1 & \text{ Wollongong} \\
+0 & \text{ otherwise (ie. Uluru)} \\
+\end{cases}$$
+
+---
+
+class: middle
+
+$\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_{i2}$
+
+$\text{prior models:}$ 
+
+$\beta_0\sim N(\ldots, \ldots )$  
+$\beta_1\sim N(\ldots, \ldots )$  
+$\sigma \sim \text{Exp}(\ldots)$
+
+--
+
+For Uluru, $X_{i2} = 0$ and the trend in 3pm temperature simplifies to 
+
+$$\beta_0 + \beta_1 \cdot 0 = \beta_0 \; .$$
+For Wollongong, $X_{i2} = 1$ and the trend in 3pm temperature is
+
+$$\beta_0 + \beta_1 \cdot 1 = \beta_0 + \beta_1 \; .$$
+---
+
+class: middle
+
+### Simulating the Posterior
+
+```{r eval = FALSE}
+weather_model_2 <- stan_glm(temp3pm ~ location, 
+                            data = weather_WU, 
+                            family = gaussian, 
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+```{r echo = FALSE, cache=TRUE}
+weather_model_2 <- stan_glm(
+  temp3pm ~ location, data = weather_WU, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735, refresh = FALSE)
+```
+
+---
+
+```{r fig.width=15}
+mcmc_dens_overlay(weather_model_2)
+```
+
+---
+
+```{r}
+# Posterior summary statistics
+model_summary <- summary(weather_model_2)
+head(as.data.frame(model_summary), -2) %>% 
+  select(mean, "10%", "90%", Rhat)
+```
+
+--
+
+```{r}
+b0 <- model_summary[1,1]
+b1 <- model_summary[2,1]
+```
+
+---
+
+```{r fig.width = 10, fig.height=5}
+ggplot(weather_WU, aes(x = temp3pm, fill = location)) + 
+  geom_density(alpha = 0.5) + 
+  geom_vline(xintercept = c(b0, b0 + b1), 
+    linetype = "dashed")
+```
+
+---
+
+### Two Predictors
+
+```{r message=FALSE, fig.height=5}
+ggplot(weather_WU, 
+    aes(y = temp3pm, x = temp9am, color = location)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+---
+
+class: middle
+
+$\text{likelihood model:}$
+$Y_i | \beta_0, \beta_1, \beta_2 \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with } \mu_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2}$
+
+$\text{prior models:}$ 
+
+$\beta_0\sim N(m_0, s_0 )$  
+$\beta_1\sim N(m_1, s_1 )$  
+$\beta_2\sim N(m_2, s_2 )$  
+$\sigma \sim \text{Exp}(l)$
+
+---
+
+class: middle 
+
+In _Uluru_, $X_{i2} = 0$ and the trend in the relationship between 3pm and 9am temperature simplifies to
+
+$$\beta_0 + \beta_1 X_{i1} + \beta_2 \cdot 0 = \beta_0 + \beta_1 X_{i1} \; .$$
+
+In _Wollongong_, $X_{i2} = 1$ and the trend in the relationship between 3pm and 9am temperature simplifies to
+
+$$\beta_0 + \beta_1 X_{i1} + \beta_2 \cdot 1 = (\beta_0 + \beta_2) + \beta_1 X_{i1} \; .$$
+---
+
+class: middle 
+
+```{r eval = FALSE}
+weather_model_3 <- stan_glm(temp3pm ~ temp9am + location, 
+                            data = weather_WU, 
+  
+                            family = gaussian, 
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+```{r echo = FALSE, cache=TRUE}
+weather_model_3 <- stan_glm(
+  temp3pm ~ temp9am + location, data = weather_WU, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735, refresh = 0)
+```
+
+---
+
+
+```{r}
+weather_model_3_df <- as.data.frame(weather_model_3)
+head(weather_model_3_df, 3)
+```
+
+---
+
+```{r eval=FALSE}
+first_50 <- head(weather_model_3_df, 50)
+
+ggplot(weather_WU, aes(x = temp9am, y = temp3pm)) + 
+  geom_point(size = 0.01) + 
+  geom_abline(data = first_50, size = 0.1,
+    aes(intercept = `(Intercept)`, slope = temp9am)) + 
+  geom_abline(data = first_50, size = 0.1,
+    aes(intercept = `(Intercept)` + locationWollongong, 
+    slope = temp9am), color = "blue")
+```
+
+---
+
+```{r echo=FALSE}
+first_50 <- head(weather_model_3_df, 50)
+
+ggplot(weather_WU, aes(x = temp9am, y = temp3pm)) + 
+  geom_point(size = 0.01) + 
+  geom_abline(data = first_50, size = 0.1,
+    aes(intercept = `(Intercept)`, slope = temp9am)) + 
+  geom_abline(data = first_50, size = 0.1,
+    aes(intercept = `(Intercept)` + locationWollongong, 
+    slope = temp9am), color = "blue")
+```
+
+
+```{r echo = FALSE}
+stats <- posterior_interval(weather_model_3, prob = 0.80)
+```
+
+---
+
+```{r cache=TRUE}
+# Simulate a set of predictions
+set.seed(84735)
+temp3pm_prediction <- posterior_predict(
+  weather_model_3, 
+  newdata = data.frame(
+    temp9am = c(10, 10), location = c("Uluru", "Wollongong")))
+```
+
+---
+
+### Posterior Predictive Model
+
+```{r fig.height=4}
+shortcut_df <- data.frame(uluru = temp3pm_prediction[,1],
+                          woll = temp3pm_prediction[,2])
+ggplot(shortcut_df, aes(x = uluru)) +
+  geom_density() +
+  geom_density(aes(x = woll), color = "blue")
+```
+
+---
+
+```{r message=FALSE, fig.height=4}
+ggplot(weather_WU,
+       aes(y = temp3pm, x = humidity9am, color = location)) + 
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+---
+
+class: middle
+
+$\text{likelihood model:}$
+$Y_i | \beta_0, \beta_1, \beta_2, \beta_3 \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with }$ 
+$\mu_i = \beta_0 + \beta_1X_{i2} + \beta_2X_{i3} + \beta_3X_{i2}X_{i3}$
+
+$\text{prior models:}$ 
+
+$\beta_0\sim N(m_0, s_0 )$  
+$\beta_1\sim N(m_1, s_1 )$  
+$\beta_2\sim N(m_2, s_2 )$  
+$\beta_3\sim N(m_3, s_3 )$  
+$\sigma \sim \text{Exp}(l)$
+
+---
+
+In _Uluru_, $X_{2} = 0$ and the trend in the relationship between temperature and humidity simplifies to
+
+$$\mu = \beta_0 + \beta_2 X_{3} \; .$$
+
+In _Wollongong_, $X_{2} = 1$ and the trend in the relationship between temperature and humidity simplifies to
+
+$$\mu = \beta_0 + \beta_1 + \beta_2 X_{3} + \beta_3 X_{3} = (\beta_0 + \beta_1) + (\beta_2 + \beta_3) X_3 \; .$$
+
+---
+
+class: middle
+
+```{r eval=FALSE}
+interaction_model <- stan_glm(temp3pm ~ location + humidity9am + 
+                                location:humidity9am,
+                              data = weather_WU, 
+                              family = gaussian,
+                              chains = 4, 
+                              iter = 5000*2, 
+                              seed = 84735)
+```
+
+```{r echo=FALSE, cache=TRUE}
+interaction_model <- stan_glm(
+temp3pm ~ location + humidity9am + location:humidity9am,
+data = weather_WU, family = gaussian,
+chains = 4, iter = 5000*2, seed = 84735, refresh=FALSE)
+```
+
+---
+
+```{r}
+model_summary <- summary(interaction_model)
+head(as.data.frame(model_summary), -2) %>%
+select(`10%`, `50%`, `90%`) %>%
+round(3)
+```
+
+
+```{r echo = FALSE, cache=TRUE}
+interaction_model <- stan_glm(
+  temp3pm ~ location + humidity9am + location:humidity9am, 
+  data = weather_WU, family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735, refresh = 0)
+
+model_summary <- summary(interaction_model)
+post_sum <- as.data.frame(model_summary) %>% 
+  select(`10%`, `50%`, `90%`) %>% 
+  round(3) %>% 
+  head(-2)
+```
+
+
+---
+
+class: middle
+
+$$\begin{array}{lrl}
+\text{Uluru:}      & \mu & =  `r post_sum[1,2]` - `r -post_sum[3,2]` \text{ humidity9am} \\
+\text{Wollongong:} & \mu & = (`r post_sum[1,2]` - `r -post_sum[2,2]`) + (`r post_sum[3,2]` + `r post_sum[4,2]`) \text{ humidity9am}\\
+&& = `r post_sum[1,2] + post_sum[2,2]` + `r post_sum[3,2] + post_sum[4,2]` \text{ humidity9am}\\
+\end{array}$$
+
+---
+
+## Do you need an interaction term?
+
+- __Context.__ 
+
+- __Visualizations.__ 
+
+- __Hypothesis tests.__ 
+
+---
+
+## More than two predictors
+
+$\text{likelihood model:} \; \; \; Y_i | \beta_0, \beta_1,\beta_2,...\beta_p, \sigma \;\;\;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right)\text{ with }$ 
+$\mu_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \ldots +\beta_pX_{ip}$
+
+$\text{prior models:}$ 
+
+$\beta_0, \beta_1,\beta_2, ...,\beta_p\sim N(\ldots, \ldots )$  
+ 
+$\sigma \sim \text{Exp}(\ldots)$
+
+---
+
+class: middle
+
+```{r eval = FALSE}
+weather_model_4 <- stan_glm(temp3pm ~ ., 
+                            data = weather_WU, 
+                            family = gaussian, 
+                            chains = 4, 
+                            iter = 5000*2, 
+                            seed = 84735)
+```
+
+```{r echo = FALSE, cache=TRUE}
+weather_model_4 <- stan_glm(
+  temp3pm ~ ., data = weather_WU, 
+  family = gaussian, 
+  chains = 4, iter = 5000*2, seed = 84735, refresh = 0)
+```
+
+---
+
+class: middle center 
+
+## Model evaluation and comparison
+
+<div align="center">
+
+| Model             | Formula                        |
+|-------------------|--------------------------------|
+| `weather_model_1` | `temp3pm ~ temp9am`            |
+| `weather_model_2` | `temp3pm ~ location`           |
+| `weather_model_3` | `temp3pm ~ temp9am + location` |
+| `weather_model_4` | `temp3pm ~ .`                  |
+
+---
+
+```{r echo = FALSE, fig.width = 10, fig.height = 7}
+g1 <- pp_check(weather_model_1) + theme(legend.position = "bottom")
+g2 <- pp_check(weather_model_2) + theme(legend.position = "bottom")
+g3 <- pp_check(weather_model_3) + theme(legend.position = "bottom")
+g4 <- pp_check(weather_model_4) + theme(legend.position = "bottom")
+gridExtra::grid.arrange(g1,g2,g3,g4,ncol = 2)
+```
+
+---
+
+```{r cache=TRUE}
+set.seed(84735)
+predictions_1 <- posterior_predict(weather_model_1, 
+  newdata = weather_WU)
+```
+
+```{r echo = FALSE, cache=TRUE}
+set.seed(84735)
+predictions_2 <- posterior_predict(weather_model_2, 
+  newdata = weather_WU)
+
+set.seed(84735)
+predictions_3 <- posterior_predict(weather_model_3, 
+  newdata = weather_WU)
+
+set.seed(84735)
+predictions_4 <- posterior_predict(weather_model_4, 
+  newdata = weather_WU)
+```
+
+```{r fig.width = 4, fig.height = 2.25, eval = FALSE}
+# Posterior predictive models for weather_model_1
+ppc_intervals(weather_WU$temp3pm, 
+  yrep = predictions_1, 
+  x = weather_WU$temp9am, 
+  prob = 0.5, prob_outer = 0.95)
+
+# Posterior predictive models for weather_model_2
+ppc_violin_grouped(weather_WU$temp3pm, 
+  yrep = predictions_2, 
+  group = weather_WU$location,
+  y_draw = "points")
+```
+
+
+---
+
+```{r eval=FALSE}
+prediction_summary_cv(data = weather_WU, 
+                      model = weather_model_1, 
+                      k = 10)
+```
+
+---
+
+class: middle center
+
+```{r echo = FALSE}
+set.seed(84735)
+ps_1 <- prediction_summary_cv(
+  data = weather_WU, model = weather_model_1, k = 10)$cv
+
+set.seed(84735)
+ps_2 <- prediction_summary_cv(
+  data = weather_WU, model = weather_model_2, k = 10)$cv
+
+set.seed(84735)
+ps_3 <- prediction_summary_cv(
+  data = weather_WU, model = weather_model_3, k = 10)$cv
+
+set.seed(84735)
+ps_4 <- prediction_summary_cv(
+  data = weather_WU, model = weather_model_4, k = 10)$cv
+
+post_sum_df <- data.frame(rbind(round(ps_1,3), round(ps_2,3), round(ps_3,3), round(ps_4,3)))
+```
+
+
+```{r echo = FALSE, warning=FALSE}
+test_mat <- matrix(
+  c("model", "mae", "mae scaled", "within 50", "within 95", 
+    "weather model 1", post_sum_df[1,],
+    "weather model 2", post_sum_df[2,],
+    "weather model 3", post_sum_df[3,],
+    "weather model 4", post_sum_df[4,]
+    ), nrow = 5, byrow = TRUE)
+
+knitr::kable(test_mat)
+```
+
+
+

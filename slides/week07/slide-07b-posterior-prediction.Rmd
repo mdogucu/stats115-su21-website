@@ -1,0 +1,177 @@
+---
+title: "Posterior Prediction"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE, message=FALSE}
+library(bayesrules)
+library(tidyverse)
+library(janitor)
+library(ggforce)
+library(gridExtra)
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+class: middle
+
+### Posterior prediction of new outcomes
+
+Suppose we get our hands on 20 more artworks.
+What number would you _predict_ are done by artists that are Gen X or younger?
+
+--
+
+- __sampling variability__ 
+
+- __posterior variability__ in $\pi$.\index{sampling variability} 
+
+---
+
+class: middle
+
+First, let $Y' = y'$ be the (yet unknown) number of the 20 new artworks that are done by Gen X or younger artists.
+Thus conditioned on $\pi$, the randomness in $Y'$ can be modeled by $Y'|\pi \sim \text{Bin}(20,\pi)$ with pdf
+
+$$f(y'|\pi) = P(Y' = y' | \pi) = \binom{20}{ y'} \pi^{y'}(1-\pi)^{20 - y'}$$
+--
+
+class: middle
+
+$$f(y'|\pi) f(\pi|(y=14)) \; ,$$
+---
+
+```{r art-pred-1-ch8, fig.width = 15, echo = FALSE}
+binom_plot <- function(pi_val){
+  pred_plot <- data.frame(x = 0:20, y = dbinom(0:20, size = 20, prob = pi_val)*dbeta(pi_val,post_a, post_b))
+  ggplot(pred_plot, aes(x = x, y = y)) + 
+    geom_point(size = 0.7) + 
+    geom_segment(aes(x = x, xend = x, y = 0, yend = y), size = 0.1) + 
+    lims(y = c(0,3)) + 
+    labs(x = "y'", title = substitute(paste(pi, " = ", nn), list(nn = pi_val)), y = expression(paste("f(y'|", pi, ")", "f(", pi, "|(y = 14))")))
+}
+
+
+g1 <- binom_plot(pi_val = lower_95) 
+g2 <- binom_plot(pi_val = post_mode)
+g3 <- binom_plot(pi_val = upper_95)
+
+grid.arrange(g1, g2, g3, ncol=3)
+
+```
+
+---
+class: middle
+
+$f(y'|(y=14)) = \int_0^1 f(y'|\pi) f(\pi|(y=14)) d\pi$
+
+--
+
+$f(y'|(y=14)) = {20 \choose y'} \frac{\Gamma(110)}{\Gamma(18)\Gamma(92)}\frac{\Gamma(18+y')\Gamma(112-y')} {\Gamma(130)}  \text{ for } y' \in \{0,1,\ldots,20\}$
+
+--
+
+$f((y'=3)|(y=14)) = {20 \choose 3}\frac{\Gamma(110)}{\Gamma(18)\Gamma(92)}\frac{\Gamma(18+3)\Gamma(112-3)} {\Gamma(130)} = 0.2217$
+
+---
+
+```{r art-pred-2-ch8, echo = FALSE}
+pred_pdf <- Vectorize(function(x){choose(20,x)*gamma(110)/gamma(18)/gamma(92)*gamma(18+x)*gamma(112-x) /gamma(130)})
+
+# Confirm it's valid
+#sum(pred_pdf(x = 0:20))
+
+plot_pred <- data.frame(x = 0:20, y = pred_pdf(0:20))
+ggplot(plot_pred, aes(x = x, y = y)) + 
+  geom_point(size = 0.7) + 
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y), size = 0.25) + 
+  labs(x = "y'", y = "f(y' | (y = 14))")
+
+
+```
+
+---
+
+Let $Y'$ denote a new outcome of variable $Y$.  Further, let pdf $f(y'|\pi)$ denote the dependence of $Y'$ on $\pi$ and posterior pdf $f(\pi|y)$ denote the posterior plausibility of $\pi$ given the original data $Y = y$.  Then the posterior predictive model for $Y'$ has pdf
+
+$$f(y'|y) = \int f(y'|\pi) f(\pi|y) d\pi \; .$$
+
+In words, the overall chance of observing $Y' = y'$ weights the chance of observing this outcome under _any_ possible $\pi$ ( $f(y'|\pi)$ ) by the posterior plausibility of $\pi$ ( $f(\pi|y)$ ).
+
+---
+
+```{r echo=FALSE, cache=TRUE}
+library(rstan)
+# STEP 1: DEFINE the model
+art_model <- "
+  data {
+    int<lower=0, upper=100> Y;
+  }
+  parameters {
+    real<lower=0, upper=1> pi;
+  }
+  model {
+    Y ~ binomial(100, pi);
+    pi ~ beta(4, 6);
+  }
+"
+
+# STEP 2: SIMULATE the posterior
+art_sim <- stan(
+  model_code = art_model, data = list(Y = 14), 
+  chains = 4, iter = 5000*2, seed = 84735, refresh=FALSE)
+
+art_chains_df <- as.data.frame(art_sim, 
+  pars ="lp__", include = FALSE)
+```
+
+```{r}
+head(art_chains_df, 3)
+```
+
+---
+
+```{r}
+set.seed(84735)
+# Predict a value of Y' for each pi value in the chain
+art_chains_df <- art_chains_df %>% 
+  mutate(y_predict = rbinom(length(pi), size = 20, prob = pi))
+```
+
+--
+
+```{r}
+head(art_chains_df, 3)
+```
+
+---
+
+```{r fig.height=5}
+ggplot(art_chains_df, aes(x = y_predict)) + 
+  stat_count()
+```
+

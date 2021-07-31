@@ -1,0 +1,725 @@
+---
+title: "Bayesian Models for Random Variables"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+---
+
+```{r echo = FALSE, message = FALSE}
+library(tidyverse)
+library(xaringanExtra)
+```
+
+
+
+## Notation
+
+- We will use _Greek letters_ (eg: $\pi, \beta, \mu$) to denote our primary variables of interest.
+
+- We will use _capital letters_ toward the end of the alphabet (eg: $X, Y, Z$) to denote random variables related to our data.  
+
+- We denote an observed _outcome_ of $Y$ (a constant) using lower case $y$.  
+
+---
+
+# Review: Discrete probability models
+
+Let $Y$ be a discrete random variable with probability mass function (pmf) $f(y)$.  Then the pmf defines the probability of any given $y$, $f(y) = P(Y = y)$, and has the following properties:    
+
+$\sum_{\text{all } y} f(y) = 1$  
+
+$0 \le f(y) \le 1$ for all values of $y$ in the range of $Y$
+
+
+
+---
+
+## PhD admissions
+
+Let Y represent a random variable that represents the number of applicants admitted to a PhD program which has received applications from 5 prospective students. That is $\Omega_Y = \{0, 1, 2, 3, 4, 5\}$. We are interested in the parameter $\pi$ which represents the probability of acceptance to this program. For demonstrative purposes, we will only consider three possible values of $\pi$ as 0.2, 0.4, and 0.8. 
+
+---
+
+# Prior model for $\pi$
+
+You are now a true Bayesian and decide to consult with an expert who knows the specific PhD program well and the following is the prior distribution the expert suggests you use in your analysis. 
+
+<table align = "center">
+<tr>
+  <th> &pi;</th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td> f(&pi;)</td>
+  <td> 0.7</td>
+  <td> 0.2</td>
+  <td> 0.1</td>
+
+</tr>
+</table>
+
+The expert thinks that this is quite a hard-to-get-into program.
+
+---
+
+# From prior to posterior
+
+We have a prior model for $\pi$ that is $f(\pi)$. 
+
+In light of observed data $y$ we can update our ideas about $\pi$. 
+
+We will call this the posterior model $f(\pi|y)$.  
+
+In order to do this update we will need data which we have not observed yet. 
+
+---
+
+## Consider data
+
+For the two scenarios below fill out the table (twice). For now, it is OK to use your intuition to guesstimate. 
+
+<table align = "center">
+<tr>
+  <th></th>
+  <th> &pi;</th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td></td>
+  <td> f(&pi;)</td>
+  <td> 0.7</td>
+  <td> 0.2</td>
+  <td> 0.1</td>
+
+</tr>
+
+<tr>
+  <td>Scenario 1</td>
+  <td> f(&pi;|y)</td>
+  <td> </td>
+  <td> </td>
+  <td> </td>
+
+</tr>
+
+<tr>
+  <td> Scenario 2</td>
+  <td> f(&pi;|y)</td>
+  <td> </td>
+  <td> </td>
+  <td> </td>
+
+</tr>
+
+
+
+</table>
+
+Scenario 1: What if this program accepted five of the five applicants?
+
+Scenario 2: What if this program accepted none of the five applicants? 
+---
+
+## Intuition vs. Reality
+
+Your intuition may not be Bayesian if
+- you have only relied on the prior model to decide on the posterior model.
+- you have only relied on the data to decide on the posterior model.
+
+Bayesian statistics is a balancing act and we will take both the prior and the data to get to the posterior. Don't worry if your intuition was wrong. As we practice more, you will learn to think like a Bayesian.
+
+---
+
+## Likelihood
+
+We do not know $\pi$ but for now let's consider one of the three possibilities for $\pi = 0.2$. If $\pi$ were 0.2 what is the probability that we would observe 4 of the 5 applicants get admitted to the program? Would you expect this probability to be high or low?
+
+
+--
+
+Can you calculate an exact value?
+
+---
+
+## The Binomial Model
+
+Let random variable $Y$ be the _number of successes_ (eg: number of accepted applicants) in $n$ _trials_ (eg: applications).  Assume that the number of trials is _fixed_, the trials are _independent_, and the _probability of success_ (eg: probability of acceptance) in each trial is $\pi$.  Then the _dependence_ of $Y$ on $\pi$ can be modeled by the Binomial model with __parameters__ $n$ and $\pi$.  In mathematical notation:
+ 
+$$Y | \pi \sim \text{Bin}(n,\pi) $$
+
+then, the Binomial model is specified by a conditional pmf:    
+
+$$f(y|\pi) = {n \choose y} \pi^y (1-\pi)^{n-y} \;\; \text{ for } y \in \{0,1,2,\ldots,n\}$$
+
+---
+
+## The Binomial Model
+
+$f(y = 4 | \pi = 0.2) = {5 \choose 4} 0.2^40.8^1 = \frac{5!}{(5-4)! 4!} 0.2^40.8^1= 0.0064$  
+
+or using R
+
+```{r echo = TRUE}
+dbinom(x = 4, size = 5, prob = 0.2)
+```
+
+---
+
+## The Binomial Model
+
+If $\pi$ were 0.2 what is the probability that we would observe 3 of the 5 applicants get admitted to the program? Would you expect this probability to be high or low?
+
+$f(x = 3 | \pi = 0.2) = {5 \choose 3} 0.2^30.8^2 = \frac{5!}{(5-3)! 3!} 0.2^30.8^2 =0.0512$  
+
+or using R
+
+```{r echo = TRUE}
+dbinom(x = 3, size = 5, prob = 0.2)
+```
+
+---
+
+## The Binomial Model
+
+Rather than doing this one-by-one we can let R consider all different possible observations of y, 0 through 5. 
+
+```{r}
+dbinom(x = 0:5, size = 5, prob = 0.2)
+```
+
+
+---
+
+## Probabilities for $y_is$ if $\pi = 0.2$
+
+```{r echo = FALSE, fig.align = 'center'}
+# Set up plot data
+n   <- 5
+pi  <- c(0.2, 0.4, 0.8)
+pis <- data.frame(setting = factor(rep(1:length(pi), each = (n + 1))),
+    x = rep(0:n, length(pi)),
+    pi = rep(pi, each = (n + 1)))
+pis <- pis %>% 
+    mutate(y = dbinom(x, size = n, prob = pi)) %>% 
+    mutate(x_observed = as.factor(x == 3))
+levels(pis$setting) <- paste0("Bin(",n,", ",pi,")")
+pis_1 <-pis %>% 
+  filter(pi == 0.2) 
+  
+ 
+ggplot(pis_1, aes(x = x, y = y)) + 
+    lims(x = c(0,n), y = c(0, 0.6)) + 
+    geom_point(size = 0.75) + 
+    geom_segment(data = pis_1, 
+                 aes(x = x, 
+                     y = rep(0,length(y)), 
+                     xend = x, 
+                     yend = y, 
+                     )) +
+    labs(x = "y", y = expression(paste("f(y|",pi,")"))) + 
+    scale_color_manual(values = c("black","red")) + 
+    theme(legend.position="none") 
+``` 
+
+
+---
+
+## Other possibilities for $\pi$
+
+```{r echo = FALSE, fig.align = 'center'}
+ggplot(pis, aes(x = x, y = y)) + 
+    lims(x = c(0,n), y = c(0, max(pis$y))) + 
+    geom_point(size = 0.75) + 
+    facet_wrap(~ setting) + 
+    geom_segment(data = pis, aes(x = x, y = rep(0,length(y)), xend = x, yend = y)) +
+    labs(x = "y", y = expression(paste("f(y|",pi,")"))) + 
+    scale_color_manual(values = c("black","red")) + 
+    theme(legend.position="none") 
+```
+
+---
+
+## Data
+
+The admissions committee has announced that they have accepted 3 of the 5 applicants. 
+
+---
+
+## Data
+
+```{r echo = FALSE, fig.align='center'}
+ggplot(pis, aes(x = x, y = y)) + 
+    lims(x = c(0,n), y = c(0, max(pis$y))) + 
+    geom_point(size = 0.75, aes(color = x_observed)) + 
+    facet_wrap(~ setting) + 
+    geom_segment(data = pis, aes(x = x, y = rep(0,length(y)), xend = x, yend = y, color = x_observed)) +
+    labs(x = "y", y = expression(paste("f(y|",pi,")"))) + 
+    scale_color_manual(values = c("black","red")) + 
+    theme(legend.position="none") 
+```
+
+---
+
+## Likelihood
+
+
+```{r echo = FALSE, fig.align='center'}
+just_3 <- pis %>% 
+  filter(x == 3)
+ggplot(just_3, aes(x = pi, y = y)) + 
+  geom_point(size = 0.75, aes(color = "red")) + 
+  geom_segment(data = just_3, aes(x = pi, y = rep(0,length(y)), xend = pi, yend = y, color = "red")) +
+  labs(x = expression(pi), y = expression(paste("L(",pi,"|(x=3))"))) + 
+  theme(legend.position="none") +
+  scale_x_continuous(breaks = c(0.2, 0.4, 0.8))
+```
+
+---
+
+## Likelihood
+
+```{r}
+dbinom(x = 3, size = 5, prob = 0.2)
+```
+
+```{r}
+dbinom(x = 3, size = 5, prob = 0.4)
+```
+
+```{r}
+dbinom(x = 3, size = 5, prob = 0.8)
+```
+
+---
+
+## Likelihood
+
+<table align = "center">
+<tr>
+  <th> &pi; </th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td> L(&pi; | y = 3)</td>
+  <td> 0.0512</td>
+  <td> 0.2304</td>
+  <td> 0.2048</td>
+
+</tr>
+
+
+</table>
+
+
+---
+
+## Likelihood
+
+The likelihood function $L(\pi|y=3)$ is the same as the conditional probability mass function $f(y|pi)$ at the observed value $y = 3$.
+
+---
+
+### __pmf vs likelihood__    
+
+When $\pi$ is known, the __conditional pmf__ $f(\cdot | \pi)$ allows us to compare the probabilities of different possible values of data $Y$ (eg: $y_1$ or $y_2$) occurring with $\pi$: 
+
+$$f(y_1|\pi) \; \text{ vs } \; f(y_2|\pi) \; .$$  
+
+When $Y=y$ is known, the __likelihood function__ $L(\cdot | y) = f(y | \cdot)$ allows us to compare the relative likelihoods of different possible values of $\pi$ (eg: $\pi_1$ or $\pi_2$) given that we observed data $y$:
+
+$$L(\pi_1|y) \; \text{ vs } \; L(\pi_2|y) \; .$$
+
+---
+
+
+
+## Getting closer to conclusion
+
+The expert assigned the highest weight to $\pi = 0.2$. 
+
+However the data $y = 3$ suggests that $\pi = 0.4$ is more likely. 
+
+We will continue to consider all the possible values of $\pi$.
+
+Now is a good time to balance the prior and the likelihood.
+
+---
+
+## From events to random variables
+
+$\text{posterior} = \frac{\text{prior} \times \text{likelihood}}{\text{marginal probability of data}}$
+
+--
+
+$\text{posterior} = \frac{\text{prior} \times \text{likelihood}}{f(y = 3)}$
+
+--
+
+$\text{posterior} = \frac{\text{prior} \times \text{likelihood}}{f(y = 3 \cap \pi = 0.2) + f(y = 3 \cap \pi = 0.4) + f(y = 3 \cap \pi = 0.8)}$
+
+--
+
+$\text{posterior} = \frac{\text{prior} \times \text{likelihood}}{f(y = 3 | \pi = 0.2) \cdot (\pi = 0.2) + f(y = 3 | \pi = 0.4) \cdot (\pi = 0.4) + f(y = 3 | \pi = 0.8) \cdot (\pi = 0.8)}$
+
+
+---
+
+## Normalizing constant
+
+
+$\text{posterior} = \frac{\text{prior} \times \text{likelihood}}{f(y = 3 | \pi = 0.2) \cdot (\pi = 0.2) + f(y = 3 | \pi = 0.4) \cdot (\pi = 0.4) + f(y = 3 | \pi = 0.8) \cdot (\pi = 0.8)}$
+
+
+Thus $f(y = 3) =$
+
+```{r}
+dbinom(x = 3, size = 5, prob = 0.2) * 0.7 +
+dbinom(x = 3, size = 5, prob = 0.4) * 0.2 +
+dbinom(x = 3, size = 5, prob = 0.8) * 0.1
+```
+
+---
+
+# Posterior 
+
+<table align = "center">
+<tr>
+  <th> &pi; </th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td> f(&pi;)</td>
+  <td> 0.7</td>
+  <td> 0.2</td>
+  <td> 0.1</td>
+
+</tr>
+
+<tr>
+  <td> L(&pi; | y = 3)</td>
+  <td> 0.0512</td>
+  <td> 0.2304</td>
+  <td> 0.2048</td>
+
+</tr>
+
+
+<tr>
+  <td> f(&pi; | y = 3)</td>
+  <td> </td>
+  <td> </td>
+  <td> </td>
+
+</tr>
+
+</table>
+
+--
+
+$f(\pi=0.2 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+--
+
+$= \frac{0.7 \times 0.0512}{0.1024}$
+
+--
+
+$= 0.35$
+
+---
+
+# Posterior 
+
+<table align = "center">
+<tr>
+  <th> &pi; </th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td> f(&pi;)</td>
+  <td> 0.7</td>
+  <td> 0.2</td>
+  <td> 0.1</td>
+
+</tr>
+
+<tr>
+  <td> L(&pi; | y = 3)</td>
+  <td> 0.0512</td>
+  <td> 0.2304</td>
+  <td> 0.2048</td>
+
+</tr>
+
+
+<tr>
+  <td> f(&pi; | y = 3)</td>
+  <td>0.35</td>
+  <td> </td>
+  <td> </td>
+
+</tr>
+
+</table>
+
+--
+
+$f(\pi=0.4 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+--
+
+$= \frac{0.2 \times 0.2304}{0.1024}$
+
+--
+
+$= 0.45$
+
+
+---
+
+# Posterior 
+
+<table align = "center">
+<tr>
+  <th> &pi; </th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td> f(&pi;)</td>
+  <td> 0.7</td>
+  <td> 0.2</td>
+  <td> 0.1</td>
+
+</tr>
+
+<tr>
+  <td> L(&pi; | y = 3)</td>
+  <td> 0.0512</td>
+  <td> 0.2304</td>
+  <td> 0.2048</td>
+
+</tr>
+
+
+<tr>
+  <td> f(&pi; | y = 3)</td>
+  <td>0.35</td>
+  <td>0.45</td>
+  <td> </td>
+
+</tr>
+
+</table>
+
+--
+
+$f(\pi=0.8 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+--
+
+$= \frac{0.1 \times 0.2048}{0.1024}$
+
+--
+
+$= 0.2$
+
+---
+
+# Posterior 
+
+<table align = "center">
+<tr>
+  <th> &pi; </th>
+  <th> 0.2</th>
+  <th> 0.4</th>
+  <th> 0.8</th>
+
+</tr>
+
+<tr>
+  <td> f(&pi;)</td>
+  <td> 0.7</td>
+  <td> 0.2</td>
+  <td> 0.1</td>
+
+</tr>
+
+<tr>
+  <td> L(&pi; | y = 3)</td>
+  <td> 0.0512</td>
+  <td> 0.2304</td>
+  <td> 0.2048</td>
+
+</tr>
+
+
+<tr>
+  <td> f(&pi; | y = 3)</td>
+  <td>0.35</td>
+  <td>0.45</td>
+  <td>0.2 </td>
+
+</tr>
+
+</table>
+
+
+---
+
+### Why is normalizing constant a "normalizing constant"?
+
+```{r xaringan-panelset, echo=FALSE}
+xaringanExtra::use_panelset()
+```
+
+.panelset[
+
+.panel[.panel-name[&pi; = 0.2]
+
+$f(\pi=0.2 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+$= \frac{0.7 \times 0.0512}{0.1024}$
+
+]
+
+.panel[.panel-name[&pi; = 0.4]
+
+$f(\pi=0.4 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+$= \frac{0.2 \times 0.2304}{0.1024}$
+
+
+]
+
+
+.panel[.panel-name[&pi; = 0.8]
+
+$f(\pi=0.8 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+$= \frac{0.1 \times 0.2048}{0.1024}$
+
+]
+
+]
+
+---
+
+### Why is normalizing constant a "normalizing constant"?
+
+
+
+.panelset[
+
+.panel[.panel-name[&pi; = 0.2]
+
+$f(\pi=0.2 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+$= \frac{0.7 \times 0.0512}{0.1024}$
+
+$\propto {0.7 \times 0.0512}$
+
+]
+
+.panel[.panel-name[&pi; = 0.4]
+
+$f(\pi=0.4 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+$= \frac{0.2 \times 0.2304}{0.1024}$
+
+
+$\propto 0.2 \times 0.2304$
+
+
+]
+
+
+.panel[.panel-name[&pi; = 0.8]
+
+$f(\pi=0.8 | y = 3) = \frac{f(\pi)L(\pi|y =3)}{f(y = 3)}$
+
+$= \frac{0.1 \times 0.2048}{0.1024}$
+
+$\propto 0.1 \times 0.2048$
+
+]
+
+]
+
+---
+
+class: center middle
+
+$$f(\pi|y) \propto f(\pi)L(\pi|y)$$
+
+
+---
+## In summary
+
+Every Bayesian analysis consists of three common steps.   
+
+1.Construct a __prior model__ for your variable of interest, $\pi$.    
+    A prior model specifies two important pieces of information: the possible values of $\pi$ and the relative prior plausibility of each.  
+
+2.Upon observing data $Y = y$, define the __likelihood function__ $L(\pi|y)$.    
+    As a first step, we summarize the dependence of $Y$ on $\pi$ via a __conditional pmf__ $f(y|\pi)$.  The likelihood function is then defined by $L(\pi|y) = f(y|\pi)$ and can be used to compare the relative likelihood of different $\pi$ values in light of data $Y = y$.
+
+---
+
+## In summary
+
+3.Build the __posterior model__ of $\pi$ via Bayes' Rule.    
+    By Bayes' Rule, the posterior model is constructed by balancing the prior and likelihood:
+
+$$\text{posterior} = \frac{\text{prior} \cdot \text{likelihood}}{\text{normalizing constant}} \propto \text{prior} \cdot \text{likelihood}$$
+More technically,
+    
+$$f(\pi|y) = \frac{f(\pi)L(\pi|y)}{f(y)} \propto f(\pi)L(\pi|y)$$
+
+

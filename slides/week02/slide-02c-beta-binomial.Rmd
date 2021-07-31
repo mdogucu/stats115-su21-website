@@ -1,0 +1,195 @@
+---
+title: "The Beta-Binomial Model"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+
+---
+
+## Bike ownership
+The transportation office at our school wants to know $\pi$ the proportion of people who own bikes on campus so that they can build bike racks accordingly. The staff at the office think that the $\pi$ is more likely to be somewhere 0.05 to 0.25. The plot below shows their prior distribution. Write out a reasonable $f(\pi)$. Calculate the prior expected value, mode, and variance. 
+
+```{r echo = FALSE}
+library(ggplot2)
+library(bayesrules)
+```
+
+
+```{r fig.align='center', fig.height=3.5, echo = FALSE}
+plot_beta(5, 35) +
+    theme(text = element_text(size=20)) 
+```
+
+---
+
+## Plotting the prior
+
+```{r eval = FALSE}
+plot_beta(5, 35) 
+```
+
+```{r fig.align='center', fig.height=4, echo = FALSE}
+plot_beta(5, 35) +
+    theme(text = element_text(size=20)) 
+```
+
+---
+
+## Summarizing the prior
+
+```{r}
+summarize_beta(5, 35)
+```
+
+
+---
+
+## Posterior for the Beta-Binomial Model
+
+Let $\pi \sim \text{Beta}(\alpha, \beta)$ and $Y|n \sim \text{Bin}(n,\pi)$. 
+
+--
+
+$f(\pi|y) \propto \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\pi^{\alpha-1} (1-\pi)^{\beta-1} {n \choose y}\pi^y(1-\pi)^{n-y}$
+
+--
+
+
+$f(\pi|y) \propto \pi^{(\alpha+y)-1} (1-\pi)^{(\beta+n-y)-1}$
+
+--
+
+$\pi|y \sim \text{Beta}(\alpha +y, \beta+n-y)$
+
+--
+
+$f(\pi|y) = \frac{\Gamma(\alpha+\beta+n)}{\Gamma(\alpha+y)\Gamma(\beta+n-y)} \pi^{(\alpha+y)-1} (1-\pi)^{(\beta+n-y)-1}$
+
+---
+
+## Conjugate prior
+
+We say that $f(\pi)$ is a conjugate prior for $L(\pi|y)$ if the posterior, $f(\pi|y) \propto f(\pi)L(\pi|y)$, is from the same model family as the prior.  
+
+Thus, Beta distribution is a conjugate prior for the Binomial likelihood model since the posterior also follows a Beta distribution.
+
+---
+
+## Bike ownership posterior
+
+The transportation office decides to collect some data and samples 50 people on campus and asks them whether they own a bike or not. It turns out that 25 of them do! What is the posterior distribution of $\pi$ after having observed this data? 
+
+--
+
+$\pi|y \sim \text{Beta}(\alpha +y, \beta+n-y)$
+
+--
+
+$\pi|y \sim \text{Beta}(5 +25, 35+50-25)$
+
+--
+
+$\pi|y \sim \text{Beta}(30, 60)$
+
+
+---
+
+## Plotting the posterior
+
+```{r eval = FALSE}
+plot_beta(30, 60) 
+```
+
+```{r fig.align='center', fig.height=4, echo = FALSE}
+plot_beta(30, 60) +
+    theme(text = element_text(size=20)) 
+```
+
+
+---
+
+## Summarizing the posterior
+
+```{r}
+summarize_beta(30,60)
+```
+
+
+
+---
+
+## Plot summary
+
+```{r eval = FALSE}
+plot_beta(30, 60, mean = TRUE, mode = TRUE) 
+```
+
+```{r fig.align='center', fig.height=4, echo = FALSE}
+plot_beta(30, 60, mean = TRUE, mode = TRUE) +
+    theme(text = element_text(size=20)) 
+```
+
+---
+
+## Bike ownership: balancing act
+
+```{r eval = FALSE}
+plot_beta_binomial(alpha = 5, beta = 35,
+                   y = 25, n = 50)
+```
+
+```{r fig.align='center', fig.height=5, echo = FALSE}
+plot_beta_binomial(alpha = 5, beta = 35,
+                   y = 25, n = 50) +
+      theme(text = element_text(size=20)) 
+
+```
+
+
+
+---
+
+## Posterior Descriptives
+
+$\pi|(Y=y) \sim \text{Beta}(\alpha+y, \beta+n-y)$
+
+$$E(\pi | (Y=y)) = \frac{\alpha + y}{\alpha + \beta + n}$$ 
+$$\text{Mode}(\pi | (Y=y))  = \frac{\alpha + y - 1}{\alpha + \beta + n - 2} $$
+$$\text{Var}(\pi | (Y=y))   = \frac{(\alpha + y)(\beta + n - y)}{(\alpha + \beta + n)^2(\alpha + \beta + n + 1)}\\$$
+---
+
+## Bike ownership - descriptives of the posterior
+
+What is the descriptive measures (expected value, mode, and variance) of the posterior distribution for the bike ownership example?
+
+--
+
+
+```{r}
+summarize_beta_binomial(5, 35, y = 25, n = 50)
+```
+

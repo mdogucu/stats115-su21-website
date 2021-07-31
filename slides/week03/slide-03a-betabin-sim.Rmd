@@ -1,0 +1,150 @@
+---
+title: "Simulating the Beta-Binomial"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: ["slide-style.css"]
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+---
+
+class: title-slide
+
+```{r child = "../setup.Rmd"}
+```
+
+```{r echo=FALSE}
+library(bayesrules)
+```
+
+
+<br>
+<br>
+.right-panel[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+## Prior
+
+
+
+```{r fig.height=5}
+plot_beta(45, 55)
+```
+
+---
+
+## Data and the Posterior
+
+```{r}
+summarize_beta_binomial(45, 55, y = 30, n = 50)
+```
+
+---
+
+```{r fig.height=4.5}
+plot_beta_binomial(45, 55, y = 30, n = 50)
+```
+
+---
+
+```{r message=FALSE}
+library(tidyverse)
+set.seed(84735)
+```
+
+```{r}
+michelle_sim <- data.frame(pi = rbeta(10000, 45, 55)) 
+```
+
+---
+
+```{r echo=FALSE}
+head(michelle_sim)
+tail(michelle_sim)
+```
+
+---
+
+```{r}
+set.seed(84735)
+michelle_sim <- data.frame(pi = rbeta(10000, 45, 55)) %>% 
+  mutate(y = rbinom(10000, size = 50, prob = pi))
+```
+
+---
+
+```{r echo=FALSE}
+head(michelle_sim)
+tail(michelle_sim)
+```
+
+---
+
+```{r}
+michelle_posterior <- michelle_sim %>% 
+  filter(y == 30)
+
+
+```
+
+--
+
+```{r}
+nrow(michelle_posterior)
+```
+
+--
+
+$f(\pi|y =30)$
+---
+
+```{r fig.height=5.5}
+ggplot(michelle_posterior, aes(x = pi)) + 
+  geom_histogram(color = "white", binwidth = 0.025)
+```
+
+
+---
+
+```{r fig.height=5.5}
+ggplot(michelle_posterior, aes(x = pi)) + 
+  geom_density() +
+  xlim(0,1)
+```
+
+---
+
+.pull-left[
+
+
+```{r echo=FALSE}
+plot_beta_binomial(45, 55, y = 30, n = 50, 
+                   prior = FALSE, likelihood=FALSE) +
+  theme(legend.position = "none") +
+  labs(title = "Beta(75,75)")
+```
+
+]
+
+.pull-right[
+
+
+```{r echo=FALSE}
+ggplot(michelle_posterior, aes(x = pi)) + 
+  geom_density() +
+  xlim(0,1) +
+  labs(title = "Posterior Simulation")
+```
+
+]

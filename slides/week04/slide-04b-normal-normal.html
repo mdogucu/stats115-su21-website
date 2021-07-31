@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>The Normal-Normal Model</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Mine Dogucu" />
+    <script src="slide-04b-normal-normal_files/header-attrs-2.6.6/header-attrs.js"></script>
+    <link rel="stylesheet" href="slide-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide
+
+
+
+
+
+
+
+&lt;br&gt;
+&lt;br&gt;
+.right-panel[ 
+
+# The Normal-Normal Model
+## Dr. Mine Dogucu
+Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
+
+]
+
+---
+
+class: middle
+
+## Data
+Let `\((Y_1,Y_2,\ldots,Y_{25})\)` denote the hippocampal volumes for volumes for the  
+`\(n = 25\)` study subjects who played collegiate American football and who have been diagnosed with concussions:
+
+
+```r
+# Load the data
+data(football)
+
+# Filter and scale the data from microliters to cubic cm
+football &lt;- football %&gt;%
+  filter(group == "fb_concuss") %&gt;% 
+  mutate(volume = hipp / 1000)
+```
+
+---
+
+## Data
+
+
+
+```r
+football %&gt;%
+  summarize(mean(volume), sd(volume))
+```
+
+```
+##   mean(volume) sd(volume)
+## 1       5.7346  0.5933976
+```
+
+---
+
+## Data
+
+
+```r
+ggplot(football, aes(x = volume)) + 
+  geom_density()
+```
+
+&lt;img src="slide-04b-normal-normal_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+__The Normal model__
+
+Let `\(Y\)` be a random variable which can take any value between `\(-\infty\)` and `\(\infty\)`, ie. `\(Y \in (-\infty,\infty)\)`.  Then the variability in `\(Y\)` might be well represented by a Normal model with __mean parameter__ `\(\mu \in (-\infty, \infty)\)` and __standard deviation parameter__ `\(\sigma &gt; 0\)`: 
+
+`$$Y \sim N(\mu, \sigma^2)$$`
+
+The Normal model is specified by continuous pdf
+
+`\begin{equation}
+f(y) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\bigg[{-\frac{(y-\mu)^2}{2\sigma^2}}\bigg] \;\; \text{ for } y \in (-\infty,\infty)
+\end{equation}`
+
+
+---
+
+__Trends and variability of the Normal model__
+
+`$$\begin{split}
+E(Y) &amp; = \text{ Mode}(Y) = \mu \\
+\text{Var}(Y) &amp; = \sigma^2 \\
+\end{split}$$`
+
+Further, `\(\sigma\)` provides a sense of scale for `\(Y\)`. Roughly 95% of `\(Y\)` values will be within 2 standard deviations of `\(\mu\)`:
+
+`\begin{equation}
+\mu \pm 2\sigma \; .
+\end{equation}`
+
+
+
+
+---
+
+__Normal models__
+
+
+&lt;img src="slide-04b-normal-normal_files/figure-html/normal-tuning-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Normal Likelihood
+
+`$$L(\mu |\vec{y})= \prod_{i=1}^{n}L(\mu | y_i) = \prod_{i=1}^{n}\frac{1}{\sqrt{2\pi\sigma^2}} \exp\bigg[{-\frac{(y_i-\mu)^2}{2\sigma^2}}\bigg].$$`
+
+Simplifying this up to a _proportionality_ constant
+
+`$$L(\mu |\vec{y}) \propto \prod_{i=1}^{n} \exp\bigg[{-\frac{(y_i-\mu)^2}{2\sigma^2}}\bigg] =  \exp\bigg[{-\frac{\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}}\bigg] \; .$$`
+
+--
+
+`\begin{equation}
+L(\mu | \vec{y}) \propto \exp\bigg[{-\frac{(\bar{y}-\mu)^2}{2\sigma^2/n}}\bigg] \;\;\;\; \text{ for } \; \mu \in (-\infty, \infty).
+\end{equation}`
+
+---
+
+`$$L(\mu | \vec{y}) \propto \exp\bigg[{-\frac{(5.735-\mu)^2}{2(0.593^2/25)}}\bigg] \;\;\;\; \text{ for } \; \mu \in (-\infty, \infty),$$` 
+
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="slide-04b-normal-normal_files/figure-html/likelihood-hippocampus-ch5-1.png" alt="The joint Normal likelihood function for the mean hippocampal volume."  /&gt;
+&lt;p class="caption"&gt;The joint Normal likelihood function for the mean hippocampal volume.&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
+## Normal prior
+
+$$\mu \sim N(\theta, \tau^2) \; , $$
+
+with prior pdf 
+
+`\begin{equation}
+f(\mu) = \frac{1}{\sqrt{2\pi\tau^2}} \exp\bigg[{-\frac{(\mu - \theta)^2}{2\tau^2}}\bigg] \;\; \text{ for } \mu \in (-\infty,\infty) \; .
+\end{equation}`
+
+
+--
+
+[Wikipedia](https://en.wikipedia.org/wiki/Hippocampus) tells us that among the general population of human adults, both halves of the hippocampus have a volume between 3.0 and 3.5 cubic centimeters.
+Thus the _total_ hippocampal volume of _both_ sides of the brain is between 6 and 7 cubic centimeters.
+
+--
+
+`$$\mu \sim N(6.5, 0.5^2) \;.$$`
+---
+
+
+```r
+plot_normal(mean = 6.5, sd = 0.5)
+```
+
+&lt;img src="slide-04b-normal-normal_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+__The Normal-Normal Bayesian model__
+
+Let `\(\mu \in (-\infty,\infty)\)` be an unknown _mean_ parameter and `\((Y_1,Y_2,\ldots,Y_n)\)` be an independent `\(N(\mu,\sigma^2)\)` sample where `\(\sigma\)` is assumed to be _known_.
+The Normal-Normal Bayesian model complements the Normal structure of the data with a Normal prior on `\(\mu\)`:
+
+`$$\begin{split}
+Y_i | \mu &amp; \stackrel{ind}{\sim} N(\mu, \sigma^2) \\
+\mu &amp; \sim N(\theta, \tau^2) \\
+\end{split}$$`
+
+Upon observing data `\(\vec{y} = (y_1,y_2,\ldots,y_n)\)`, the posterior model of `\(\mu\)` is also a Normal with updated parameters:
+
+`\begin{equation}
+\mu|\vec{y} \; \sim \;  N\bigg(\frac{\theta\sigma^2/n + \bar{y}\tau^2}{\tau^2+\sigma^2/n}, \; \frac{\tau^2\sigma^2/n}{\tau^2+\sigma^2/n}\bigg) \; .
+\end{equation}`
+
+---
+
+The posterior model of `\(\mu\)` is:
+
+`$$\mu | \vec{y} \; \sim \; N\bigg(\frac{6.5*0.593^2/25 + 5.734*0.5^2}{0.5^2+0.593^2/25}, \; \frac{0.5^2*0.593^2/25}{0.5^2+0.593^2/25}\bigg)\;,$$`
+
+or, further simplified,
+
+`$$\mu | \vec{y} \; \sim \; N\bigg(5.775, 0.115^2 \bigg) \; .$$`
+
+---
+
+
+```r
+plot_normal_normal(mean = 6.5, sd = 0.5, sigma = 0.593, 
+  y_bar = 5.734, n = 25)
+```
+
+&lt;img src="slide-04b-normal-normal_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+```r
+summarize_normal_normal(mean = 6.5, sd = 0.5, sigma = 0.593, 
+  y_bar = 5.735, n = 25)
+```
+
+```
+##       model     mean     mode        var
+## 1     prior 6.500000 6.500000 0.25000000
+## 2 posterior 5.775749 5.775749 0.01331671
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "pygments",
+"highlightLines": true,
+"highlightLanguage": "r"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
