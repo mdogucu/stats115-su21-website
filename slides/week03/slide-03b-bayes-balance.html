@@ -4,7 +4,7 @@
     <title>Balance in Bayesian Analyses</title>
     <meta charset="utf-8" />
     <meta name="author" content="Dr. Mine Dogucu" />
-    <script src="slide-03b-bayes-balance_files/header-attrs-2.6/header-attrs.js"></script>
+    <script src="slide-03b-bayes-balance_files/header-attrs-2.9/header-attrs.js"></script>
     <link rel="stylesheet" href="slide-style.css" type="text/css" />
   </head>
   <body>
@@ -142,9 +142,9 @@ summarize_beta_binomial(14, 1, y = 9, n = 20)
 ```
 
 ```
-##       model alpha beta      mean      mode         var
-## 1     prior    14    1 0.9333333 1.0000000 0.003888889
-## 2 posterior    23   12 0.6571429 0.6666667 0.006258503
+##       model alpha beta      mean      mode         var         sd
+## 1     prior    14    1 0.9333333 1.0000000 0.003888889 0.06236096
+## 2 posterior    23   12 0.6571429 0.6666667 0.006258503 0.07911070
 ```
 
 ---
@@ -170,9 +170,9 @@ summarize_beta_binomial(1, 1, y = 9, n = 20)
 ```
 
 ```
-##       model alpha beta      mean mode        var
-## 1     prior     1    1 0.5000000  NaN 0.08333333
-## 2 posterior    10   12 0.4545455 0.45 0.01077973
+##       model alpha beta      mean mode        var        sd
+## 1     prior     1    1 0.5000000  NaN 0.08333333 0.2886751
+## 2 posterior    10   12 0.4545455 0.45 0.01077973 0.1038255
 ```
 
 ---
@@ -197,9 +197,9 @@ summarize_beta_binomial(5, 11, y = 9, n = 20)
 ```
 
 ```
-##       model alpha beta      mean      mode        var
-## 1     prior     5   11 0.3125000 0.2857143 0.01263787
-## 2 posterior    14   22 0.3888889 0.3823529 0.00642309
+##       model alpha beta      mean      mode        var         sd
+## 1     prior     5   11 0.3125000 0.2857143 0.01263787 0.11241827
+## 2 posterior    14   22 0.3888889 0.3823529 0.00642309 0.08014418
 ```
 
 ---

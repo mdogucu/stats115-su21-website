@@ -4,7 +4,7 @@
     <title>Sequentiality in Bayesian Analyses</title>
     <meta charset="utf-8" />
     <meta name="author" content="Dr. Mine Dogucu" />
-    <script src="slide-03c-bayes-sequentiality_files/header-attrs-2.6/header-attrs.js"></script>
+    <script src="slide-03c-bayes-sequentiality_files/header-attrs-2.9/header-attrs.js"></script>
     <link rel="stylesheet" href="slide-style.css" type="text/css" />
   </head>
   <body>
@@ -66,9 +66,9 @@ summarize_beta_binomial(14, 1, y = 1, n = 1)
 ```
 
 ```
-##       model alpha beta      mean mode         var
-## 1     prior    14    1 0.9333333    1 0.003888889
-## 2 posterior    15    1 0.9375000    1 0.003446691
+##       model alpha beta      mean mode         var         sd
+## 1     prior    14    1 0.9333333    1 0.003888889 0.06236096
+## 2 posterior    15    1 0.9375000    1 0.003446691 0.05870853
 ```
 
 ---
@@ -106,9 +106,9 @@ summarize_beta_binomial(15, 1, y = 0, n = 5)
 ```
 
 ```
-##       model alpha beta      mean      mode         var
-## 1     prior    15    1 0.9375000 1.0000000 0.003446691
-## 2 posterior    15    6 0.7142857 0.7368421 0.009276438
+##       model alpha beta      mean      mode         var         sd
+## 1     prior    15    1 0.9375000 1.0000000 0.003446691 0.05870853
+## 2 posterior    15    6 0.7142857 0.7368421 0.009276438 0.09631427
 ```
 
 ---
@@ -144,9 +144,9 @@ summarize_beta_binomial(15, 6, y = 1, n = 3)
 ```
 
 ```
-##       model alpha beta      mean      mode         var
-## 1     prior    15    6 0.7142857 0.7368421 0.009276438
-## 2 posterior    16    8 0.6666667 0.6818182 0.008888889
+##       model alpha beta      mean      mode         var         sd
+## 1     prior    15    6 0.7142857 0.7368421 0.009276438 0.09631427
+## 2 posterior    16    8 0.6666667 0.6818182 0.008888889 0.09428090
 ```
 
 ---
@@ -203,9 +203,9 @@ summarize_beta_binomial(14, 1, y = 2, n = 9)
 ```
 
 ```
-##       model alpha beta      mean      mode         var
-## 1     prior    14    1 0.9333333 1.0000000 0.003888889
-## 2 posterior    16    8 0.6666667 0.6818182 0.008888889
+##       model alpha beta      mean      mode         var         sd
+## 1     prior    14    1 0.9333333 1.0000000 0.003888889 0.06236096
+## 2 posterior    16    8 0.6666667 0.6818182 0.008888889 0.09428090
 ```
 
 ---

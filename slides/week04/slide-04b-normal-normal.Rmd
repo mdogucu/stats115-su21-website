@@ -46,8 +46,7 @@ data(football)
 
 # Filter and scale the data from microliters to cubic cm
 football <- football %>%
-  filter(group == "fb_concuss") %>% 
-  mutate(volume = hipp / 1000)
+  filter(group == "fb_concuss") 
 ```
 
 ---
