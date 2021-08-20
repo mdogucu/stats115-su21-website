@@ -4,7 +4,7 @@
     <title>Evaluating Regression Models</title>
     <meta charset="utf-8" />
     <meta name="author" content="Dr. Mine Dogucu" />
-    <script src="slide-08c-reg-eval_files/header-attrs-2.6.6/header-attrs.js"></script>
+    <script src="slide-08c-reg-eval_files/header-attrs-2.10/header-attrs.js"></script>
     <link rel="stylesheet" href="slide-style.css" type="text/css" />
   </head>
   <body>
@@ -275,13 +275,13 @@ Let `\(Y_1, Y_2, \ldots, Y_n\)` denote `\(n\)` _observed_ outcomes.  Then each `
 
 ```r
 # Posterior predictive summaries
-prediction_summary(y = bikes$rides, 
-  yrep = predictions)
+prediction_summary(model = normal_model_sim, 
+  data = bikes)
 ```
 
 ```
 ##        mae mae_scaled within_50 within_95
-## 1 989.8291   1.144095      0.44     0.968
+## 1 995.1727   0.770901      0.44      0.97
 ```
 
 ---
@@ -322,16 +322,16 @@ cv_procedure$folds
 
 ```
 ##    fold       mae mae_scaled within_50 within_95
-## 1     1  982.3498  1.1347732      0.46      0.98
-## 2     2  962.4132  1.1042769      0.40      1.00
-## 3     3  956.3402  1.1045559      0.42      0.98
-## 4     4 1011.6086  1.1598395      0.46      0.98
-## 5     5 1180.3943  1.3649528      0.40      0.96
-## 6     6  932.9605  1.0620776      0.46      0.94
-## 7     7 1267.7214  1.4886004      0.32      0.96
-## 8     8 1117.9843  1.2874389      0.36      1.00
-## 9     9 1108.5276  1.3011456      0.40      0.92
-## 10   10  789.2742  0.9012649      0.56      0.94
+## 1     1  990.8046  0.7707640      0.46      0.98
+## 2     2  966.2503  0.7442039      0.42      1.00
+## 3     3  953.5580  0.7314050      0.42      0.98
+## 4     4 1015.8608  0.7914139      0.46      0.98
+## 5     5 1161.5925  0.9089318      0.36      0.96
+## 6     6  935.2628  0.7290865      0.46      0.94
+## 7     7 1267.1400  1.0025401      0.32      0.96
+## 8     8 1108.0451  0.8591984      0.36      1.00
+## 9     9 1108.9709  0.8748064      0.40      0.92
+## 10   10  788.3889  0.6075533      0.56      0.96
 ```
 
 ---
@@ -343,7 +343,7 @@ cv_procedure$cv
 
 ```
 ##        mae mae_scaled within_50 within_95
-## 1 1030.957   1.190893     0.424     0.966
+## 1 1029.587  0.8019903     0.422     0.968
 ```
 
 

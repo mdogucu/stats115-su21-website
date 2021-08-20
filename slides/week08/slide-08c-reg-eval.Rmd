@@ -228,8 +228,8 @@ Let $Y_1, Y_2, \ldots, Y_n$ denote $n$ _observed_ outcomes.  Then each $Y_i$ has
  
 ```{r}
 # Posterior predictive summaries
-prediction_summary(y = bikes$rides, 
-  yrep = predictions)
+prediction_summary(model = normal_model_sim, 
+  data = bikes)
 ```
 
 ---

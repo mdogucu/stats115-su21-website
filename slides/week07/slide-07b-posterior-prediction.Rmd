@@ -66,6 +66,38 @@ $$f(y'|\pi) f(\pi|(y=14)) \; ,$$
 ---
 
 ```{r art-pred-1-ch8, fig.width = 15, echo = FALSE}
+
+# Data
+y <- 14
+n <- 100
+# Prior parameters
+prior_a <- 4
+prior_b <- 6
+# Posterior parameters
+post_a <- prior_a + y
+post_b <- prior_b + n - y
+# Posterior trend
+post_mean_unrounded <- round(post_a / (post_a + post_b),3)
+post_mean <- round(post_mean_unrounded, 2)
+post_mode <- round((post_a - 1) / (post_a + post_b - 2), 2)
+# 95% CI
+qs <- qbeta(c(0.025, 0.975), post_a, post_b)
+lower_95 <- round(qs[1],2)
+upper_95 <- round(qs[2],2)
+# 99% CI
+qs <- qbeta(c(0.005, 0.995), post_a, post_b)
+lower_99 <- round(qs[1],2)
+upper_99 <- round(qs[2],2)
+# Probabilities
+post_prob <- pbeta(0.20, post_a, post_b)
+prior_prob <- pbeta(0.20, prior_a, prior_b)
+new_y <- 0
+new_n <- 10
+new_post_a <- prior_a + new_y
+new_post_b <- prior_b + new_n - new_y
+qs <- qbeta(c(0.025, 0.975), new_post_a, new_post_b)
+new_lower_95 <- round(qs[1],2)
+new_upper_95 <- round(qs[2],2)
 binom_plot <- function(pi_val){
   pred_plot <- data.frame(x = 0:20, y = dbinom(0:20, size = 20, prob = pi_val)*dbeta(pi_val,post_a, post_b))
   ggplot(pred_plot, aes(x = x, y = y)) + 

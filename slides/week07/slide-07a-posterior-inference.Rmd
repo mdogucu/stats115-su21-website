@@ -39,8 +39,8 @@ Examples from [bayesrulesbook.com](https://bayesrulesbook.com)
 
 ```{r}
 library(bayesrules)
-data(moma_small)
-glimpse(moma_small)
+data(moma_sample)
+glimpse(moma_sample)
 ```
 
 ---
@@ -54,7 +54,7 @@ $$\pi  \sim \text{Beta}(4, 6)$$
 ---
 
 ```{r}
-moma_small %>% 
+moma_sample %>% 
   mutate(genx = (birth >= 1965)) %>% 
   tabyl(genx)
 ```
@@ -346,6 +346,11 @@ mcmc_dens(art_sim, pars = "pi")
 ---
 
 ```{r}
+broom.mixed::tidy(art_sim, conf.int = TRUE, conf.level = 0.95)
+```
+
+
+```{r eval=FALSE}
 summary(art_sim, pars = "pi")$summary
 ```
 
