@@ -14,7 +14,7 @@ Summer II 2021
 
 Basic Bayesian concepts and methods with emphasis on data analysis. Special emphasis on specification of prior distributions. Includes linear, logistic, and Poisson regression. Analyses are performed using Stan with rstan package in R. 
 
-Course website is hosted at [stats115.com](https://stats115.com).
+Course website is hosted at [mdogucu.github.io/stats115-su21-website/](https://mdogucu.github.io/stats115-su21-website/).
 
 <hr>
 
